@@ -1,4 +1,6 @@
 import tkinter
-top = tkinter.Tk()
-# Code to add widgets will go here...
-top.mainloop()
+app = tkinter.Tk()
+app.title("Investment Simulator")
+app.geometry('1920x1080')
+app.configure(bg='black')
+app.mainloop()
