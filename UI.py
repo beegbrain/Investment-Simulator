@@ -1,40 +1,54 @@
 import tkinter
 from tkinter import *
 import numpy
-global page
-def switch_home():
-    cur_bal_txt .destroy()
-    text = tkinter.Text(app, height=1, bg = 'black', fg = 'grey', relief=FLAT)
-    text.configure(font=("Calibri", 30, ""))
-    text.insert(tkinter.END, "Dunno")
-    text.grid(row=1,column=1)
-    print("pog")
-def switch_portfolio():
-    global page
-    page = "Portfolio"
-def switch_market():
-    global page
-    page = "Market"
 
-app = tkinter.Tk()
-app.title("Investment Simulator")
-app.geometry('1000x1080')
-app.configure(bg='black')
+root = tkinter.Tk()
+root.title("Investment Simulator")
+root.geometry('1000x1080')
+root.configure(bg='black')
+frame = Frame(root)
 
-menubutton = Menubutton(app, text= "≡")
-menubutton.grid()
-menubutton.menu = Menu(menubutton)
-menubutton["menu"]= menubutton.menu 
-menubutton.menu.add_command(label="Home", command=switch_home)
-menubutton.menu.add_command(label="Portfolio", command=switch_portfolio)
-menubutton.menu.add_command(label="Market", command=switch_market)
+def startup():
+    frame.configure(bg='black')
+    frame.pack()
+    menubutton = Menubutton(frame, text= "≡")
+    menubutton.menu = Menu(menubutton)
+    menubutton["menu"]= menubutton.menu 
+    menubutton.menu.add_command(label="Home", command=page_home)
+    menubutton.menu.add_command(label="Portfolio", command=page_portfolio)
+    menubutton.menu.add_command(label="Market", command=page_market)
+    menubutton.grid(row=0,column=0,pady=20,padx=20)
 
-cur_bal_txt = tkinter.Text(app, height=1, bg = 'black', fg = 'grey', relief=FLAT)
-cur_bal_txt.configure(font=("Calibri", 30, ""))
-cur_bal_txt.insert(tkinter.END, "Your Balance:")
+def page_home():
+    cur_bal_txt = tkinter.Text(frame, height=1, bg = 'black', fg = 'grey', relief=FLAT)
+    cur_bal_txt.configure(font=("Calibri", 30, ""))
+    cur_bal_txt.insert(tkinter.END, "Your Balance:")
+    cur_bal_txt.grid(row=1,column=1)
+    frame.grid_forget()
+    return([cur_bal_txt])
+def page_portfolio():
+    equity = "100,000,000"
+    for widget in page_home()[1:]:
+        print(widget)
+        widget.destroy()
+    frame.grid_forget()
+    equity_txt = tkinter.Text(frame, height=1, bg = 'black', fg = 'grey', relief=FLAT)
+    equity_txt.configure(font=("Calibri", 30, ""))
+    equity_txt.insert(tkinter.END, "Your Equity:")
+    
+    equity = tkinter.Text(frame, height=1, bg = 'black', fg = 'white', relief=FLAT)
+    equity.configure(font=("Calibri", 50, ""))
+    equity_txt.insert(tkinter.END, "100,000,000")
+    
+    equity_txt.grid(row=1,column=1)
+    equity.grid(row=2,column=1)
+    
+def page_market():
+    pass
 
-menubutton.grid(row=0,column=0)
-cur_bal_txt.grid(row=1,column=1)
-app.mainloop()
+startup()
+page_home()
+
+root.mainloop()
 
 
