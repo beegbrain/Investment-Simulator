@@ -4,7 +4,7 @@ Application that displays real time stock information from the NYSE. Allows for 
 
 # Resources
 To program this we used:
-Python IDLE 3.8
+Python IDLE 3.8 \n
 Yahoo Finance API
 Adobe XD
 TKinter
