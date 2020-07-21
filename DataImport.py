@@ -1,5 +1,6 @@
 import pandas as pd
-from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.timeseries
+import TimeSeries
 import time
 
 api_key = "2PNMXB7PYSF8WJYZ"
