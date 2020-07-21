@@ -1,20 +1,28 @@
 import tkinter
+
 from tkinter import *
 import numpy
 
+from tkinter import *
+from tkmacosx import Button
+
+import tkinter.font as font
+
+
+
 root = tkinter.Tk()
 root.title("Investment Simulator")
-root.geometry('1000x1080')
+root.geometry('1280x700')
 root.configure(bg='black')
-home = Frame(root,width=1000, height=1080)
-market = Frame(root,width=1000, height=1080)
-portfolio = Frame(root,width=1000, height=1080)
+home = Frame(root,width=1280, height=700)
+market = Frame(root,width=1280, height=700)
+portfolio = Frame(root,width=1280, height=700)
 home.configure(bg = "white")
 def raise_frame(frame):
     frame.tkraise()
     
 for frame in (home, market, portfolio):
-    frame.configure(bg="green")
+    frame.configure(bg="black")
     frame.grid(sticky='nswe')
     frame.rowconfigure(0, weight=1)
     frame.columnconfigure(0, weight=1)
@@ -40,15 +48,34 @@ graph.place(x=100,y=100)
 graph.config(state=DISABLED)
 
 #Portfolio 
+title_txt = tkinter.Text(portfolio, height=0, bg = 'black', fg = '#C7C7C7', relief=FLAT, borderwidth = 0, highlightthickness = 0, bd = 0)
+title_txt.configure(font=("Helvetica Neue bold", 30, ""))
+title_txt.insert(tkinter.END, "Portfolio value:\n")
+title_txt.place(x=100,y=100)
+title_txt.config(state=DISABLED)
+
 equity = "100,000,000"
-equity_txt = tkinter.Text(portfolio, height=2, bg = 'black', fg = 'grey', relief=FLAT)
-equity_txt.configure(font=("Calibri", 30, ""))
-equity_txt.insert(tkinter.END, "Your Equity:\n")
-equity_txt.insert(tkinter.END, "100,000,000")
-equity_txt.place(x=100,y=100)
+equity_txt = tkinter.Text(portfolio, height=0, bg = 'black', fg = 'white', relief=FLAT, borderwidth = 0, highlightthickness = 0, bd = 0)
+equity_txt.configure(font=("Helvetica Neue bold", 70, ""))
+equity_txt.insert(tkinter.END, equity)
+equity_txt.place(x=100,y=140)
 equity_txt.config(state=DISABLED)
 
+differnce_txt = tkinter.Text(portfolio, height=0, bg = 'black', fg = '#C7C7C7', relief=FLAT, borderwidth = 0, highlightthickness = 0, bd = 0)
+differnce_txt.configure(font=("Helvetica Neue bold", 30, ""))
+differnce_txt.insert(tkinter.END, "Today:\n")
+differnce_txt.place(x=600,y=100)
+differnce_txt.config(state=DISABLED)
 
+buttonFont = font.Font(size=25, family = "Helvetica Neue bold")
+Button(frame, text='+25.43',fg='white', bg='#89E274', borderless=0, borderwidth = 0, highlightthickness = 0, bd = 0, width = 200, height = 55, font = buttonFont, activebackground = '#89E274', bordercolor = '#89E274').place(x=600,y=155)
+
+equity = "Your stocks:"
+equity_txt = tkinter.Text(portfolio, height=0, bg = 'black', fg = 'white', relief=FLAT, borderwidth = 0, highlightthickness = 0, bd = 0)
+equity_txt.configure(font=("Helvetica Neue bold", 55, ""))
+equity_txt.insert(tkinter.END, equity)
+equity_txt.place(x=100,y=300)
+equity_txt.config(state=DISABLED)
 
 
 home.tkraise()
