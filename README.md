@@ -7,3 +7,4 @@ To program this we used:
 - Yahoo Finance API
 - Adobe XD
 - TKinter
+- yfinance
