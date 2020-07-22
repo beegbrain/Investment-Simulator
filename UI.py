@@ -24,7 +24,6 @@ def raise_frame(frame):
 for frame in (home, market, portfolio):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
->>>>>>> ef6a18437f8b4c09c2de9ccbac3404c6d3ec0e95
     frame.grid(sticky='nswe')
     frame.rowconfigure(0, weight=1)
     frame.columnconfigure(0, weight=1)
@@ -90,7 +89,6 @@ scroll_y.place(relx=0.485, y=330, anchor=CENTER)
     #Edit
 edit = tkinter.Button(home, text="edit",relief=FLAT, width = 5, command = "send to watchlist edit")
 edit.place(relx=0.485, y=285, anchor = CENTER)
->>>>>>> ef6a18437f8b4c09c2de9ccbac3404c6d3ec0e95
 
 
 #Market
