@@ -1,7 +1,14 @@
+#Tkinter libraries
 import tkinter
 from tkinter import *
 from tkinter import ttk
-import numpy
+#Matplot/graphing libraries
+import matplotlib
+matplotlib.use('TkAgg')
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+#Misc libraries
 from collections import Counter 
 
 root = tkinter.Tk()
@@ -31,11 +38,23 @@ for frame in (home, watchlist, market, portfolio, graphing):
 def watchlist_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
     #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
-    text = tkinter.Text(graphing, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-    text.configure(font=("Calibri", 30, ""))
-    text.insert(tkinter.END, name)
-    text.place(x=100,y=100)
-    text.config(state=DISABLED)
+    x=np.array ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    v= np.array ([16,16.31925,17.6394,16.003,17.2861,17.3131,19.1259,18.9694,22.0003,22.81226])
+    p= np.array ([16.23697,     17.31653,     17.22094,     17.68631,     17.73641 ,    18.6368,
+        19.32125,     19.31756 ,    21.20247  ,   22.41444   ,  22.11718  ,   22.12453])
+
+    fig = Figure(figsize=(3,3))#increase to make plot bigger
+    a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
+    a.scatter(v,x,color='red')
+    a.plot(p, range(2 +max(x)),color='blue')
+    
+    a.set_title ("Estimation Grid", fontsize=16)
+    a.set_ylabel("Y", fontsize=14)
+    a.set_xlabel("X", fontsize=14)
+
+    canvas = FigureCanvasTkAgg(fig, master=graphing)
+    canvas.get_tk_widget().place(x=100,y=100)
+    canvas.draw()
     
 if True:#Home Page
         #Balance
