@@ -20,8 +20,6 @@ for frame in (home, watchlist, market, portfolio):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
     frame.grid(row=0,column=0,sticky="nsew")
-    
-
     #Page Buttons
     Button(frame, text='Home',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=50)
     Button(frame, text='Watchlist',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(watchlist)).place(x=104,y=50)    
@@ -29,104 +27,105 @@ for frame in (home, watchlist, market, portfolio):
     Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(portfolio)).place(x=225,y=50)    
     
 
-#Home Page
-    #Balance
-balance = 100000000
-cur_bal_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
-cur_bal_txt.configure(font=("Calibri", 30, ""))
-cur_bal_txt.insert(tkinter.END, "Your Balance:\n")
-cur_bal_txt.insert(tkinter.END, '$' + str(balance))
-cur_bal_txt.tag_add("start", "2.0", "3.0")#select tag indexes (lines 2-3)
-cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))#change tag to white
-cur_bal_txt.place(x=100,y=100)
-cur_bal_txt.config(state=DISABLED)#No Editing text box
-    #Balance with stocks
-bal_stocks = 90000000
-bal_stocks_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
-bal_stocks_txt.configure(font=("Calibri", 30, ""))
-bal_stocks_txt.insert(tkinter.END, "With Stocks: \n")
-bal_stocks_txt.insert(tkinter.END, '$' + str(bal_stocks))
-bal_stocks_txt.tag_add("start", "2.0", "3.0")
-bal_stocks_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
-bal_stocks_txt.place(x=500,y=100)
-bal_stocks_txt.config(state=DISABLED)
-        #Bal Increase Today
-inc_num = 500000
-today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
-today.configure(font=("Calibri", 30, ""))
-today.insert(tkinter.END, "Today:\n")
-today.insert(tkinter.END, ' +' + str(inc_num))
-today.tag_add("start", "2.0", "3.0")
-today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
-today.place(x=900,y=100)
-today.config(state=DISABLED)
+if True:#Home Page
+        #Balance
+    balance = 100000000
+    cur_bal_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
+    cur_bal_txt.configure(font=("Calibri", 30, ""))
+    cur_bal_txt.insert(tkinter.END, "Your Balance:\n")
+    cur_bal_txt.insert(tkinter.END, '$' + str(balance))
+    cur_bal_txt.tag_add("start", "2.0", "3.0")#select tag indexes (lines 2-3)
+    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))#change tag to white
+    cur_bal_txt.place(x=100,y=100)
+    cur_bal_txt.config(state=DISABLED)#No Editing text box
+        #Balance with stocks
+    bal_stocks = 90000000
+    bal_stocks_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
+    bal_stocks_txt.configure(font=("Calibri", 30, ""))
+    bal_stocks_txt.insert(tkinter.END, "With Stocks: \n")
+    bal_stocks_txt.insert(tkinter.END, '$' + str(bal_stocks))
+    bal_stocks_txt.tag_add("start", "2.0", "3.0")
+    bal_stocks_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
+    bal_stocks_txt.place(x=500,y=100)
+    bal_stocks_txt.config(state=DISABLED)
+            #Bal Increase Today
+    inc_num = 500000
+    today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
+    today.configure(font=("Calibri", 30, ""))
+    today.insert(tkinter.END, "Today:\n")
+    today.insert(tkinter.END, ' +' + str(inc_num))
+    today.tag_add("start", "2.0", "3.0")
+    today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
+    today.place(x=900,y=100)
+    today.config(state=DISABLED)
 
-    #Watchlist(Home)
-watchlist_txt = tkinter.Text(home, height = 1, width = len("Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-watchlist_txt.configure(font=("Calibri", 30, ""))
-watchlist_txt.insert(tkinter.END, "Watchlist:")
-watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
-watchlist_txt.config(state=DISABLED)
-invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
-invested_curr = {"AAPL":390,"TSLA":1617,"NFLX":400,"INTL":405,"GOOGL":1343}   #Current invested profit
-names = {"AAPL":"Apple Inc.","TSLA":"Tesla Inc.","NFLX":"Netflix Inc.","INTL":"Intel Inc.","GOOGL":"Google"}   #Put the names you want to show here
-wlist = ["AAPL","TSLA","NFLX","INTL","GOOGL"]#current watchlist
-k = Counter(invested_curr) 
-highest = k.most_common(3) # Finding 3 highest values 
-x_coor=0
-scroll_y = tkinter.Scrollbar(home, orient="vertical")
-scroll_y.configure(bg='black')
-for set in highest:
-    button = Button(scroll_y, bg="white", relief=FLAT, text = (set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]]))
-    button.place(x=x_coor)
-    x_coor += len(set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])*2.7
-scroll_y.configure(width=x_coor-9)
-scroll_y.place(relx=0.485, y=330, anchor=CENTER)
-#Watchlist
-wlist_txt = tkinter.Text(watchlist, height = 1, width = len("Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-wlist_txt.configure(font=("Calibri", 30, ""))
-wlist_txt.insert(tkinter.END, "Watchlist:")
-wlist_txt.place(x=100,y=100)
-wlist_txt.config(state=DISABLED)
+        #Watchlist(Home)
+    watchlist_txt = tkinter.Text(home, height = 1, width = len("Priority Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
+    watchlist_txt.configure(font=("Calibri", 30, ""))
+    watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
+    watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
+    watchlist_txt.config(state=DISABLED)
+    invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
+    invested_curr = {"AAPL":390,"TSLA":1617,"NFLX":400,"INTL":405,"GOOGL":1343}   #Current invested profit
+    names = {"AAPL":"Apple Inc.","TSLA":"Tesla Inc.","NFLX":"Netflix Inc.","INTL":"Intel Inc.","GOOGL":"Google"}   #Put the names you want to show here
+    wlist = ["AAPL","TSLA","NFLX","INTL","GOOGL"]#current watchlist
+    k = Counter(invested_curr) 
+    highest = k.most_common(3) # Finding 3 highest values 
+    x_coor=0
+    scroll_y = tkinter.Scrollbar(home, orient="vertical")
+    scroll_y.configure(bg='black')
+    for set in highest:
+        button = Button(scroll_y, bg="white", relief=FLAT, text = (set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]]))
+        button.place(x=x_coor)
+        x_coor += len(set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])*2.7
+    scroll_y.configure(width=x_coor-9)
+    scroll_y.place(relx=0.485, y=330, anchor=CENTER)
+    
+        #Edit
+    more = tkinter.Button(home, text="View All",relief=FLAT, width = 6, command = lambda:raise_frame(watchlist))
+    more.place(relx=0.485, y=285, anchor = CENTER)
 
-frame_canvas = Frame(watchlist)# Create a frame for the canvas with non-zero row&column weights
-frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')#plot grid
-frame_canvas.grid_rowconfigure(0, weight=1)#set size
-frame_canvas.grid_columnconfigure(0, weight=1)
-frame_canvas.grid_propagate(False)# Set grid_propagate to False to allow 5-by-5 buttons resizing later
-canvas = Canvas(frame_canvas, bg="white")# Add a canvas in that frame
-canvas.grid(row=0, column=0, sticky="news")#"news" means north,east,west,south  ... covers the entire canvas
-vsb = Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)# Link a scrollbar to the canvas
-vsb.grid(row=0, column=1, sticky='ns')#covers from top to bottom (the scroll bar)
-canvas.configure(yscrollcommand=vsb.set)#link scrollbar to canvas
-frame_buttons = Frame(canvas, bg="white")# Create a frame to contain the buttons
-canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
-rows = 10# Add buttons to the frame
-columns = 10
-index=0
-buttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
-for i in range(0, rows):
-    for j in range(0, columns):
-        try:
-            #filling the slots in
-            buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,text=(wlist[index]+"\n$"+str(invested_curr[wlist[index]]) +"   "  + str(round(invested_curr[wlist[index]] - invested_before[wlist[index]],2)) + "\n" + names[wlist[index]]))
-            buttons[i][j].grid(row=i, column=j, sticky='news')
-        except:
-            #once the index is invalid/wlist is out of items, break loop because all slots are filled
-            break
-        index += 1
-frame_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
-first5columns_width = sum([buttons[0][j].winfo_width() for j in range(0, columns)])# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
-first5rows_height = sum([buttons[i][0].winfo_height() for i in range(0, rows)])
-frame_canvas.config(width=first5columns_width + vsb.winfo_width(),
-                    height=first5rows_height)
-canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
-frame_canvas.place(x=100,y=150)#plot
+if True:#Watchlist
+    wlist_txt = tkinter.Text(watchlist, height = 1, width = len("Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
+    wlist_txt.configure(font=("Calibri", 30, ""))
+    wlist_txt.insert(tkinter.END, "Watchlist:")
+    wlist_txt.place(x=100,y=100)
+    wlist_txt.config(state=DISABLED)
 
-#Edit
-more = tkinter.Button(home, text="View All",relief=FLAT, width = 5, command = lambda:raise_frame(watchlist))
-more.place(relx=0.485, y=285, anchor = CENTER,)
-
+    frame_canvas = Frame(watchlist)# Create a frame for the canvas with non-zero row&column weights
+    frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')#plot grid
+    frame_canvas.grid_rowconfigure(0, weight=1)#set size
+    frame_canvas.grid_columnconfigure(0, weight=1)
+    frame_canvas.grid_propagate(False)# Set grid_propagate to False to allow 5-by-5 buttons resizing later
+    canvas = Canvas(frame_canvas, bg="white")# Add a canvas in that frame
+    canvas.grid(row=0, column=0, sticky="news")#"news" means north,east,west,south  ... covers the entire canvas
+    vsb = Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)# Link a scrollbar to the canvas
+    vsb.grid(row=0, column=1, sticky='ns')#covers from top to bottom (the scroll bar)
+    canvas.configure(yscrollcommand=vsb.set)#link scrollbar to canvas
+    frame_buttons = Frame(canvas, bg="white")# Create a frame to contain the buttons
+    canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
+    rows = 10# Add buttons to the frame
+    columns = 10
+    index=0
+    buttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
+    for i in range(0, rows):
+        for j in range(0, columns):
+            try:
+                #filling the slots in
+                buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,text=(wlist[index]+"\n$"+str(invested_curr[wlist[index]]) +"   "  + str(round(invested_curr[wlist[index]] - invested_before[wlist[index]],2)) + "\n" + names[wlist[index]]))
+                buttons[i][j].grid(row=i, column=j, sticky='news')
+            except:
+                #once the index is invalid/wlist is out of items, break loop because all slots are filled
+                break
+            index += 1
+    frame_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
+    first5columns_width = sum([buttons[0][j].winfo_width() for j in range(0, columns)])# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
+    first5rows_height = sum([buttons[i][0].winfo_height() for i in range(0, rows)])
+    frame_canvas.config(width=first5columns_width + vsb.winfo_width(),
+                        height=first5rows_height)
+    canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
+    frame_canvas.place(x=100,y=150)#plot
+   
 #Market Page
 graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
 graph.configure(font=("Calibri", 30, ""))
