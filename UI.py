@@ -12,11 +12,13 @@ home = Frame(root,width=1280, height=700)
 watchlist = Frame(root,width=1280, height=700)
 market = Frame(root,width=1280, height=700)
 portfolio = Frame(root,width=1280, height=700)
-
+graphing = Frame(root,width=1280, height=700)
+global wlist_index
+wlist_index = 0
 def raise_frame(frame):
     frame.tkraise() #Brings desired frame to the top
     
-for frame in (home, watchlist, market, portfolio):
+for frame in (home, watchlist, market, portfolio, graphing):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
     frame.grid(row=0,column=0,sticky="nsew")
@@ -26,7 +28,15 @@ for frame in (home, watchlist, market, portfolio):
     Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=170,y=50)
     Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(portfolio)).place(x=225,y=50)    
     
-
+def watchlist_page(name):   #EDIT GRAPH HERE 
+    raise_frame(graphing)#Keep this here
+    #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
+    text = tkinter.Text(graphing, bg = 'black', fg = 'grey', relief=FLAT,height=1)
+    text.configure(font=("Calibri", 30, ""))
+    text.insert(tkinter.END, name)
+    text.place(x=100,y=100)
+    text.config(state=DISABLED)
+    
 if True:#Home Page
         #Balance
     balance = 100000000
@@ -74,9 +84,9 @@ if True:#Home Page
     x_coor=0
     scroll_y = tkinter.Scrollbar(home, orient="vertical")
     scroll_y.configure(bg='black')
+    index = 0
     for set in highest:
-        button = Button(scroll_y, bg="white", relief=FLAT, text = (set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]]))
-        button.place(x=x_coor)
+        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).place(x=x_coor)
         x_coor += len(set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])*2.7
     scroll_y.configure(width=x_coor-9)
     scroll_y.place(relx=0.485, y=330, anchor=CENTER)
@@ -112,12 +122,13 @@ if True:#Watchlist
         for j in range(0, columns):
             try:
                 #filling the slots in
-                buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,text=(wlist[index]+"\n$"+str(invested_curr[wlist[index]]) +"   "  + str(round(invested_curr[wlist[index]] - invested_before[wlist[index]],2)) + "\n" + names[wlist[index]]))
+                buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,command=lambda index=index:watchlist_page(wlist[index]), text=(wlist[index]+"\n$"+str(invested_curr[wlist[index]]) +"   "  + str(round(invested_curr[wlist[index]] - invested_before[wlist[index]],2)) + "\n" + names[wlist[index]]))
                 buttons[i][j].grid(row=i, column=j, sticky='news')
+                index += 1
             except:
                 #once the index is invalid/wlist is out of items, break loop because all slots are filled
                 break
-            index += 1
+            
     frame_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
     first5columns_width = sum([buttons[0][j].winfo_width() for j in range(0, columns)])# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
     first5rows_height = sum([buttons[i][0].winfo_height() for i in range(0, rows)])
