@@ -1,17 +1,32 @@
 import time
 import yfinance as yf
 
+import asyncio
+
 search = True
 
-while search:
-    msft = yf.Ticker("TSLA")
+async def looper():
+    for i in range(1_000_000_000):
+        msft = yf.Ticker("AAPL")
+        
+        print(msft.history(period="day"))
+        
+        await asyncio.sleep(0.5)
+
+async def main():
+    print('Starting')
+    future = asyncio.ensure_future(looper())
+    print('Waiting for a few seconds')
+    await asyncio.sleep(4)
+    print('Cancelling')
+    future.cancel()
+    print('Waiting again for a few seconds')
+    await asyncio.sleep(2)
+    print('Done')
     
-    # get stock info
-    msft.info
     
-    # get historical market data
-    hist = msft.history(period="day", interval = "1m")
-    print(hist)
-    time.sleep(5)
+if __name__ == '__main__':
+    asyncio.get_event_loop().run_until_complete(main())
 
 
+print("here")
