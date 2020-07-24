@@ -28,9 +28,10 @@ fram.pack(side=TOP)
 text = Text(root)
 
 #function to search string in text
-aList=["hi"]
+aList=["suggestions", "will","show", "up", "here"]
 def find():
     global aList
+    global dropMenu
     query = edit.get()
     returnData = pd.read_csv("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
     returnData= list(returnData)
@@ -38,13 +39,16 @@ def find():
     for i in range(0,len(returnData),2):
         returnData[i]=returnData[i].split('"')
         aList.append(returnData[i][-2])
-    dropDown = OptionMenu(root,default,*aList)
-
-butt.config(command=find)
+    print(aList)
+    dropMenu.pack_forget()
+    dropMenu = OptionMenu(root,default,*aList)
+    dropMenu.pack()
 default = StringVar(root)
-default.set(aList[0])
-dropDown = OptionMenu(root,default,*aList)
-dropDown.pack()
+default.set("click to see suggestions")
+dropMenu = OptionMenu(root,default,*aList)
+dropMenu.pack()
+butt.config(command=find)
+
 #mainloop function calls the endless loop of the window,
 #so the window will wait for any
 #user interaction till we close it
