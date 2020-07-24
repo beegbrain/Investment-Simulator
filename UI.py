@@ -23,12 +23,13 @@ watchlist = Frame(root,width=1280, height=700)
 market = Frame(root,width=1280, height=700)
 portfolio = Frame(root,width=1280, height=700)
 graphing = Frame(root,width=1280, height=700)
+search = Frame(root,width=1280, height=700)
 global wlist_index
 wlist_index = 0
 def raise_frame(frame):
     frame.tkraise() #Brings desired frame to the top
-    
-for frame in (home, watchlist, market, portfolio, graphing):
+
+for frame in (home, watchlist, market, portfolio, graphing, search):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
     frame.grid(row=0,column=0,sticky="nsew")
@@ -36,12 +37,7 @@ for frame in (home, watchlist, market, portfolio, graphing):
     Button(frame, text='Home',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=50)
     Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(watchlist)).place(x=104,y=50)    
     Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=160,y=50)
-    global edit
-    edit = Entry(frame)
-    edit.place(relx=0.5,y=50)
-    edit.focus_set()
-    butt = Button(frame, text='Find')
-    butt.place(relx=0.4,y=50)
+    Button(frame, text='Search',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=225,y=50)
     
 def watchlist_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
@@ -183,11 +179,17 @@ equity_txt.insert(tkinter.END, "100,000,000")
 equity_txt.place(x=100,y=100)
 equity_txt.config(state=DISABLED)
 
-if edit.index("end") != 0:
-    print(edit.get())
-
-#returnData = pd.read_csv("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
-#print(returnData)
+#Search Page
+edit = Entry(search)
+edit.place(relx=0.5,y=50)
+edit.focus_set()
+butt = Button(search, text='Find')
+butt.place(relx=0.4,y=50)
+def find():
+    query = edit.get()
+    returnData = pd.read_csv("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
+    print(returnData)
+butt.config(command=find)
 
 #Launch Porgram
 home.tkraise()
