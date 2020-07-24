@@ -20,7 +20,7 @@ def buyStock():#this function allows the user to buy stocks
         stocks[nameField.get()][0] +=float(numField.get())
         stocks[nameField.get()][1] =stockPrice
         position = stocks[nameField.get()][2]
-        newList.delete(position)
+        newList.delete(position)#updates the list of stocks
         newList.insert(position, nameField.get()+"\n"+
                        str(stocks[nameField.get()]))
         
@@ -48,18 +48,29 @@ def sellStock(): #this function allows the user to sell stocks
     moneyLeft.config(text="Money to Spend: " + str(buyMoney))
     return()
 
-def updateMoney():
+def updateMoney():#updates how much money you have total every 10s
     global totalMoney
     newMoney= 0
     for key, value in stocks.items():#recalculates the total money you have
         value[1] = float(get_live_price(key))
         newMoney+= value[0]*value[1]
     newMoney+=buyMoney
-    if newMoney!=totalMoney:
+    if newMoney!=totalMoney:#if the newly calculated total money is not equal to the old amount, update it in UI
         totalMoney=newMoney
         textMoney.config(text="Total Money: "+ str(newMoney))
     textMoney.after(10000,updateMoney)
+    return()
 
+def updateStocks():#updates how much each stock costs every 10s
+    print('es')
+    for key, value in stocks.items():#goes through each ticker and checks if the price has changed every 10s
+        if value[1] != get_live_price(key):
+            value[1] = get_live_price(key)
+            newList.delete(value[2])
+            newList.insert(value[2], key+"\n"+
+                       str(stocks[key]))
+    newList.after(10000,updateStocks)
+    return()
 root = tk.Tk()
 root.geometry('500x500')
 root.configure(bg='black')
@@ -85,4 +96,5 @@ moneyLeft = tk.Label(root, text="Money to Spend: " + str(buyMoney))
 moneyLeft.pack()
 newList = tk.Listbox(root)
 newList.pack()
+updateStocks()
 root.mainloop()
