@@ -9,9 +9,11 @@ async def looper():
     while True:
         global userStocks
 
+        print(userStocks)
         for item in userStocks:
-            msft = yf.Ticker(item)
-
+            ticker = yf.Ticker(item)
+            print(ticker.history(period="day"))
+            
             await asyncio.sleep(0.5)
 
 async def main():
