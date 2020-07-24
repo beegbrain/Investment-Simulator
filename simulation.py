@@ -5,7 +5,6 @@ from yahoo_fin.stock_info import *
 import yfinance as yf
 import tkinter.font
 
-keepGoing = True
 buyMoney = 10000.0
 stockMoney=0
 totalMoney = buyMoney
@@ -16,16 +15,23 @@ def buyStock():#this function allows the user to buy stocks
     global stockMoney
     global totalMoney
     stockPrice = get_live_price(nameField.get())#get the stock price of the wanted stock
-    buyMoney = buyMoney -stockPrice*int(numField.get())#makes the transaction
+    buyMoney = buyMoney - stockPrice*int(numField.get())#makes the transaction
     if str(nameField.get()) in stocks.keys():#stores it in a dictionary
-        stocks[nameField.get()][0] +=int(numField.get())
+        stocks[nameField.get()][0] +=float(numField.get())
         stocks[nameField.get()][1] =stockPrice
+        position = stocks[nameField.get()][2]
+        newList.delete(position)
+        newList.insert(position, nameField.get()+"\n"+
+                       str(stocks[nameField.get()]))
+        
     else:
-        stocks[nameField.get()] = [int(numField.get()),stockPrice]
-    stockMoney += stockPrice*int(numField.get())
-    print(stockPrice)
-    currMoney()
+        stocks[nameField.get()] = [float(numField.get()),stockPrice,len(stocks)]
+        newList.insert(len(stocks), nameField.get()+"\n"+
+                       str(stocks[nameField.get()][:2]))
+    stockMoney += stockPrice*float(numField.get())
 
+    moneyLeft.config(text="Money to Spend: " + str(buyMoney))
+    currMoney()
     return()
 
 def sellStock(): #this function allows the user to sell stocks
@@ -40,28 +46,35 @@ def sellStock(): #this function allows the user to sell stocks
     else:
         stocks[nameField.get()][0]-=1
     stockMoney-=stockPrice
+    moneyLeft.config(text="Money to Spend: " + str(buyMoney))
     currMoney()
     return()
 def currMoney(): # finds how much money with stocks you have
     global totalMoney
     totalMoney = 0.0
     for key, value in stocks.items():#recalculates the total money you have
-        value[1] = int(get_live_price(key))
+        value[1] = float(get_live_price(key))
         totalMoney+= value[0]*value[1]
     totalMoney+=buyMoney
-    print(totalMoney)
-    root.after(60000,currMoney)
+    root.after(1000,currMoney)
     return()
+def updateMoney():
+    global totalMoney
+    newMoney= 0
+    for key, value in stocks.items():#recalculates the total money you have
+        value[1] = float(get_live_price(key))
+        newMoney+= value[0]*value[1]
+    newMoney+=buyMoney
+    if newMoney!=totalMoney:
+        totalMoney=newMoney
+        textMoney.config(text="Total Money: "+ str(newMoney))
+    textMoney.after(1000,updateMoney)
+
 root = tk.Tk()
 root.geometry('500x500')
 root.configure(bg='black')
 frame = tk.Frame(root)
 frame.pack()
-str_var = tk.StringVar(value=str(totalMoney))
-textMoney=tk.Label(root, textvariable=str_var)
-textMoney.place(x=200,y=100)
-currMoney()
-str_var.set(totalMoney)
 buy=tk.Button(frame,text="BUY",fg="red",
                  activebackground='blue',
                  command=buyStock)
@@ -75,4 +88,12 @@ nameField= tk.Entry(root)
 nameField.pack()
 numField = tk.Entry(root, width=50)
 numField.pack()
+currMoney()
+textMoney = tk.Label(root, text="Total Money: " + str(totalMoney))
+textMoney.pack()
+updateMoney()
+moneyLeft = tk.Label(root, text="Money to Spend: " + str(buyMoney))
+moneyLeft.pack()
+newList = tk.Listbox(root)
+newList.pack()
 root.mainloop()
