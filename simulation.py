@@ -31,7 +31,6 @@ def buyStock():#this function allows the user to buy stocks
     stockMoney += stockPrice*float(numField.get())
 
     moneyLeft.config(text="Money to Spend: " + str(buyMoney))
-    currMoney()
     return()
 
 def sellStock(): #this function allows the user to sell stocks
@@ -47,17 +46,8 @@ def sellStock(): #this function allows the user to sell stocks
         stocks[nameField.get()][0]-=1
     stockMoney-=stockPrice
     moneyLeft.config(text="Money to Spend: " + str(buyMoney))
-    currMoney()
     return()
-def currMoney(): # finds how much money with stocks you have
-    global totalMoney
-    totalMoney = 0.0
-    for key, value in stocks.items():#recalculates the total money you have
-        value[1] = float(get_live_price(key))
-        totalMoney+= value[0]*value[1]
-    totalMoney+=buyMoney
-    root.after(1000,currMoney)
-    return()
+
 def updateMoney():
     global totalMoney
     newMoney= 0
@@ -68,7 +58,7 @@ def updateMoney():
     if newMoney!=totalMoney:
         totalMoney=newMoney
         textMoney.config(text="Total Money: "+ str(newMoney))
-    textMoney.after(1000,updateMoney)
+    textMoney.after(10000,updateMoney)
 
 root = tk.Tk()
 root.geometry('500x500')
@@ -88,7 +78,6 @@ nameField= tk.Entry(root)
 nameField.pack()
 numField = tk.Entry(root, width=50)
 numField.pack()
-currMoney()
 textMoney = tk.Label(root, text="Total Money: " + str(totalMoney))
 textMoney.pack()
 updateMoney()
