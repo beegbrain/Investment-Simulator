@@ -1,5 +1,13 @@
 import json
 
+class UserData:
+    def __init__(self, stocks, watchlist, money):
+        self.stocks = stocks
+        self.watchlist = watchlist
+        self.money = money
+        
+userData = UserData([],[],0)
+
 #save data
 userDataToSave = {'stocks':["AAPL", "TSLA"], 'watchlist':["TSLA", "AMZN"], 'money':1000000}
 
@@ -8,11 +16,16 @@ with open('InvestmentSimUserData.json', 'w') as file:
     file.close()
    
 #load data
-file = open('InvestmentSimUserData.json')
-userData = json.load(file)
-file.close()
+with open('InvestmentSimUserData.json', 'r') as file:
+    loadedData = json.load(file)
+    file.close()
+    
+    #parse data
+    userData.stocks = loadedData['stocks']
+    userData.watchlist = loadedData['watchlist']
+    userData.money = loadedData['money']
 
-print(userData)
+    print(userData.stocks)
 
     
 
