@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 import pandas as pd
 #Misc libraries
 from collections import Counter 
-import yfinance
+import yfinance as yf
 from yahoo_fin.stock_info import *
 
 root = tkinter.Tk()
@@ -24,6 +24,26 @@ market = Frame(root,width=1280, height=700)
 portfolio = Frame(root,width=1280, height=700)
 graphing = Frame(root,width=1280, height=700)
 search = Frame(root,width=1280, height=700)
+
+#Grabbing Data
+photo = PhotoImage(file = r"C:\Users\alexa\Downloads\Code\NWAPW\mag_glass.png")
+photo = photo.subsample(15,15) 
+datafile = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt").read().split()
+wlist = eval(datafile[0])#current watchlist
+invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
+shares = eval(datafile[2])
+prices = dict()
+names = dict()
+for index in wlist:
+    print(index)
+    prices[index] = get_live_price(index)
+    stock = yf.Ticker(index)
+    names[index] = stock.info['shortName']
+
+
+
+
+
 global wlist_index
 wlist_index = 0
 def raise_frame(frame):
@@ -34,12 +54,12 @@ for frame in (home, watchlist, market, portfolio, graphing, search):
     frame.configure(bg="black") #Background Color
     frame.grid(row=0,column=0,sticky="nsew")
     #Page Buttons
-    Button(frame, text='Home',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=50)
-    Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(watchlist)).place(x=104,y=50)    
-    Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=160,y=50)
-    Button(frame, text='Search',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=225,y=50)
+    Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=20)
+    Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(watchlist)).place(x=180,y=20)    
+    Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=330,y=20)
+    Button(frame, text='Search',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=500,y=20)
     
-def watchlist_page(name):   #EDIT GRAPH HERE 
+def graph_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
     #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
     x=np.array ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -59,7 +79,8 @@ def watchlist_page(name):   #EDIT GRAPH HERE
     
 if True:#Home Page
         #Balance
-    balance = 100000000
+    prev_bal  = int(datafile[4])
+    balance = int(datafile[3])
     cur_bal_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
     cur_bal_txt.configure(font=("Calibri", 30, ""))
     cur_bal_txt.insert(tkinter.END, "Your Balance:\n")
@@ -69,7 +90,7 @@ if True:#Home Page
     cur_bal_txt.place(x=100,y=100)
     cur_bal_txt.config(state=DISABLED)#No Editing text box
         #Balance with stocks
-    bal_stocks = 90000000
+    bal_stocks = int(datafile[5])
     bal_stocks_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
     bal_stocks_txt.configure(font=("Calibri", 30, ""))
     bal_stocks_txt.insert(tkinter.END, "With Stocks: \n")
@@ -79,7 +100,7 @@ if True:#Home Page
     bal_stocks_txt.place(x=500,y=100)
     bal_stocks_txt.config(state=DISABLED)
             #Bal Increase Today
-    inc_num = 500000
+    inc_num = balance - prev_bal
     today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
     today.configure(font=("Calibri", 30, ""))
     today.insert(tkinter.END, "Today:\n")
@@ -95,13 +116,7 @@ if True:#Home Page
     watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
     watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
     watchlist_txt.config(state=DISABLED)
-    invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
-    invested_curr = {"AAPL":390,"TSLA":1617,"NFLX":400,"INTL":405,"GOOGL":1343}   #Current invested profit
-    shares = {"AAPL":1,"TSLA":3,"NFLX":2,"INTL":1,"GOOGL":5}
-    prices = {"AAPL":get_live_price('aapl'),"TSLA":get_live_price('tsla'),"NFLX":get_live_price('nflx'),"INTL":get_live_price('intl'),"GOOGL":get_live_price('googl')}
-    names = {"AAPL":"Apple Inc.","TSLA":"Tesla Inc.","NFLX":"Netflix Inc.","INTL":"Intel Inc.","GOOGL":"Google"}   #Put the names you want to show here
-    wlist = ["AAPL","TSLA","NFLX","INTL","GOOGL"]#current watchlist
-    k = Counter(invested_curr) 
+    k = Counter(invested_before) 
     highest = k.most_common(3) # Finding 3 highest values 
     x_coor=0
     scroll_y = tkinter.Scrollbar(home, orient="vertical")
@@ -109,7 +124,7 @@ if True:#Home Page
     index = 0
     # Show price of stock, profit in %, how many shares
     for set in highest:
-        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(round(prices[set[0]],2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
+        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(prices[set[0]],2)) +"   "  + str(round(shares[set[0]]*prices[set[0]] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
         x_coor += len(set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]]) * 4
     scroll_y.configure()
     scroll_y.place(relx=0.485, y=330, anchor=CENTER)
@@ -148,7 +163,7 @@ if True:#Watchlist
                     #share price x amount of shares
                     #profit amount profit %
                 #filling the slots in
-                buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,command=lambda index=index:watchlist_page(wlist[index]), text=(wlist[index]+"\n$"+str(round(prices[wlist[index]],2)) +" x "  +str(shares[wlist[index]])+ '\n' + str(round(invested_curr[wlist[index]] - invested_before[wlist[index]],2)) + ' (' +str(round(invested_curr[wlist[index]]/invested_before[wlist[index]],2))+ '%)' + "\n" + names[wlist[index]]))
+                buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,command=lambda index=index:graph_page(wlist[index]), text=(wlist[index]+"\n$"+str(round(prices[wlist[index]],2)) +" x "  +str(shares[wlist[index]])+ '\n' + str(round(shares[wlist[index]] * prices[wlist[index]] - invested_before[wlist[index]],2)) + ' (' +str(round(shares[wlist[index]] * prices[wlist[index]]/invested_before[wlist[index]],2))+ '%)' + "\n" + names[wlist[index]]))
                 buttons[i][j].grid(row=i, column=j, sticky='news')
                 index += 1
             except:
@@ -185,12 +200,18 @@ edit.place(relx=0.5,y=50)
 edit.focus_set()
 butt = Button(search, text='Find')
 butt.place(relx=0.4,y=50)
+name = list()
 def find():
+    global name
+    name = list()
     query = edit.get()
-    returnData = pd.read_csv("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
-    print(returnData)
+    response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
+    data = response.text.split(',')
+    for index in range(0, len(data), 2):
+        data[index] = data[index].split(':')
+        name.append(data[index][1].replace('"',''))
+    return(names)
 butt.config(command=find)
-
 #Launch Porgram
 home.tkraise()
 root.mainloop()
