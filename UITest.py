@@ -11,13 +11,15 @@ from matplotlib.figure import Figure
 import pandas as pd
 #Misc libraries
 from collections import Counter 
-import yfinance
+import yfinance as yf
 from yahoo_fin.stock_info import *
+from tkinter import messagebox as mb
+
 
 buyMoney = 10000.0
 stockMoney=0.0
 totalMoney=buyMoney
-stocks={}
+
 
 invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
 shares = {"AAPL":1,"TSLA":3,"NFLX":2,"INTL":1,"GOOGL":5}
@@ -49,10 +51,80 @@ for frame in (home, watchlist, market, portfolio, graphing, search):
     Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(watchlist)).place(x=104,y=50)    
     Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=160,y=50)
     Button(frame, text='Search',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=225,y=50)
-def buyStock():
+def buyStock(name):
     global stockMoney
     global buyMoney
     global totalMoney
+    global numField
+    global balance
+    stockPrice = get_live_price(name)#get the stock price of the wanted stock
+    transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
+    if transaction <0:
+        mb.showerror("Error", "you do not have enough money for this purchase")
+        return()
+    buyMoney=transaction
+    if str(name.upper()) in invested_before.keys():#stores it in a dictionary
+        shares[name.upper()] += float(numField.get())
+        prices[name.upper()] = stockPrice
+        '''position = stocks[name.upper()][2]
+        newList.delete(position)#updates the list of stocks
+        newList.insert(position, name+"\n"+
+                       str(stocks[nameField.get()]))'''
+        
+    else:
+        shares[name.upper()] = numField.get()
+        invested_before[name.upper()] = get_live_price(name)
+        prices[name.upper()] = get_live_price(name)
+        stock = yf.Ticker(name)
+        names[name.upper()] = stock.info['shortName']
+    stockMoney += stockPrice*float(numField.get())
+    balance = buyMoney
+    cur_bal_txt.delete('1.0','end')
+    cur_bal_txt.insert('1.0', "Balance:")
+    cur_bal_txt.insert('2.0', str(balance))
+    print("ey")
+#    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
+   # moneyLeft.config(text="Money to Spend: " + str(buyMoney))
+    return()
+def sellStock(name): #this function allows the user to sell stocks
+    global buyMoney
+    global stockMoney
+    global totalMoney
+    if(name.upper() not in shares.keys()):
+        mb.showerror("Error", "you do not own any of this stock")
+        return()
+    elif(int(numField.get())>shares[name]):
+        mb.showerror("Error", "you do not have enough stocks for this transaction")
+        return()
+    stockPrice = get_live_price(name)#get the live price of a stock
+    prices[name] = stockPrice #update stock price
+    buyMoney = buyMoney+stockPrice #updates how much spending money you have
+    if shares[name] == 1:#updates the stock count/portfolio
+        shares.pop(name.upper(),None)
+        invested_before.pop(name.upper(),None)
+        prices.pop(name.upper(),None)
+        names.pop(name.upper(),None)
+    else:
+        shares[name]-=1
+    stockMoney-=stockPrice
+    #moneyLeft.config(text="Money to Spend: " + str(buyMoney))
+    return()
+def updateMoney():
+    global bal_stocks
+    global totalMoney
+    global bal_stocks_txt
+    print("yes")
+    totalMoney = 0
+    for key in shares:
+        prices[key] = get_live_price(key)
+        totalMoney+=float(prices[key])*float(shares[key])
+    totalMoney+=buyMoney
+    if totalMoney!=bal_stocks: #if the newly calculated total money is not equal to the old amount, update it in UI
+        bal_stocks = totalMoney
+        bal_stocks_txt.delete('1.0','end')
+        bal_stocks_txt.insert('1.0', "With Stocks:")
+        bal_stocks_txt.insert('2.0', str(bal_stocks))
+    bal_stocks_txt.after(10000,updateMoney)
 def watchlist_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
     #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
@@ -70,12 +142,15 @@ def watchlist_page(name):   #EDIT GRAPH HERE
     canvas = FigureCanvasTkAgg(fig, master=graphing)
     canvas.get_tk_widget().place(x=100,y=100)
     canvas.draw()
-    buyButton= Button(graphing, text="BUY",command=buyStock)
-    buyButton.place(x=500,y=400)
-    
+    buyButton= Button(graphing, width=21,text="BUY",command=lambda:buyStock(name))
+    buyButton.place(x=500,y=300)
+    sellButton=Button(graphing, width=21,text="SELL",command=lambda:sellStock(name))
+    sellButton.place(x=650,y=300)
+    numField.place(x=500,y=330)
+    graphing.mainloop()
 if True:#Home Page
         #Balance
-    balance = 100000000
+    balance = buyMoney
     cur_bal_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
     cur_bal_txt.configure(font=("Calibri", 30, ""))
     cur_bal_txt.insert(tkinter.END, "Your Balance:\n")
@@ -85,7 +160,7 @@ if True:#Home Page
     cur_bal_txt.place(x=100,y=100)
     cur_bal_txt.config(state=DISABLED)#No Editing text box
         #Balance with stocks
-    bal_stocks = 90000000
+    bal_stocks = totalMoney
     bal_stocks_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
     bal_stocks_txt.configure(font=("Calibri", 30, ""))
     bal_stocks_txt.insert(tkinter.END, "With Stocks: \n")
@@ -94,6 +169,7 @@ if True:#Home Page
     bal_stocks_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
     bal_stocks_txt.place(x=500,y=100)
     bal_stocks_txt.config(state=DISABLED)
+    updateMoney()
             #Bal Increase Today
     inc_num = 500000
     today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
@@ -135,6 +211,7 @@ if True:#Watchlist
     wlist_txt.place(x=100,y=100)
     wlist_txt.config(state=DISABLED)
 
+    numField = Entry(graphing, width=50)
     frame_canvas = Frame(watchlist)# Create a frame for the canvas with non-zero row&column weights
     frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')#plot grid
     frame_canvas.grid_rowconfigure(0, weight=1)#set size
@@ -164,9 +241,9 @@ if True:#Watchlist
                                        text=(wlist[index]+"\n$"+
                                              str(round(prices[wlist[index]],2)) + " x "  +
                                              str(shares[wlist[index]])+'\n' +
-                                             str(round(invested_curr[wlist[index]]
+                                             str(round(get_live_price(wlist[index])
                                                               - invested_before[wlist[index]],2)) +
-                                             ' (' +str(round(invested_curr[wlist[index]]/
+                                             ' (' +str(round(get_live_price(wlist[index])/
                                                              invested_before[wlist[index]],2))+
                                              '%)' + "\n" + names[wlist[index]]))
                 buttons[i][j].grid(row=i, column=j, sticky='news')
