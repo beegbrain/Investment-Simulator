@@ -1,4 +1,7 @@
 import json
+import pathlib
+
+filePath = pathlib.Path().absolute()
 
 class UserData:
     def __init__(self, stocks, watchlist, money):
@@ -11,12 +14,12 @@ userData = UserData([],[],0)
 #save data
 userDataToSave = {'stocks':["AAPL", "TSLA"], 'watchlist':["TSLA", "AMZN"], 'money':1000000}
 
-with open('InvestmentSimUserData.json', 'w') as file:
+with open(r"{}InvestmentSimUserData.json".format(filePath), 'w') as file:
     json.dump(userDataToSave, file)
     file.close()
    
 #load data
-with open('InvestmentSimUserData.json', 'r') as file:
+with open(r"{}InvestmentSimUserData.json".format(filePath), 'r') as file:
     loadedData = json.load(file)
     file.close()
     
