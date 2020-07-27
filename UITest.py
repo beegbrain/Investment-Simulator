@@ -82,8 +82,9 @@ def buyStock(name):
     cur_bal_txt.delete('1.0','end')
     cur_bal_txt.insert('1.0', "Balance:")
     cur_bal_txt.insert('2.0', str(balance))
+    cur_bal_txt.tag_add("id", "2.0", "3.0")#select tag indexes (lines 2-3)
+    cur_bal_txt.tag_config("id", background="black", foreground="white",font=("Calibri", 40, "bold"))#change tag to white and bigger font
     print("ey")
-#    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
    # moneyLeft.config(text="Money to Spend: " + str(buyMoney))
     return()
 def sellStock(name): #this function allows the user to sell stocks
