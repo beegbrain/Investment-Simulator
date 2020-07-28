@@ -15,11 +15,9 @@ import yfinance as yf
 from yahoo_fin.stock_info import *
 from tkinter import messagebox as mb
 
-
 buyMoney = 10000.0
 stockMoney=0.0
 totalMoney=buyMoney
-
 
 invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
 shares = {"AAPL":1,"TSLA":3,"NFLX":2,"INTL":1,"GOOGL":5}
@@ -57,7 +55,9 @@ def buyStock(name):
     global totalMoney
     global numField
     global balance
+
     global cur_bal_txt
+
     stockPrice = get_live_price(name)#get the stock price of the wanted stock
     transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
     if transaction <0:
@@ -69,15 +69,30 @@ def buyStock(name):
         prices[name.upper()] = stockPrice
         
     else:
-        shares[name.upper()] = numField.get() #stores the # of shares you bought
-        invested_before[name.upper()] = get_live_price(name) #stores the price you bought it at
-        prices[name.upper()] = get_live_price(name) #stores the live price
-        stock = yf.Ticker(name) 
-        names[name.upper()] = stock.info['shortName'] #stores the actual company name
+
+        shares[name.upper()] = numField.get()
+        invested_before[name.upper()] = get_live_price(name)
+        prices[name.upper()] = get_live_price(name)
+        stock = yf.Ticker(name)
+        names[name.upper()] = stock.info['shortName']
+    stockMoney += stockPrice*float(numField.get())
+   
+    balance = update()
+    cur_bal_txt.delete('1.0','end')
+    cur_bal_txt.insert('1.0', "Balance:")
+    cur_bal_txt.insert('2.0', str(balance))
+   
+
+    shares[name.upper()] = numField.get() #stores the # of shares you bought
+    invested_before[name.upper()] = get_live_price(name) #stores the price you boughtit at
+    prices[name.upper()] = get_live_price(name) #stores the live price
+    stock = yf.Ticker(name)
+    names[name.upper()] = stock.info['shortName'] #stores the actual company name
     stockMoney += stockPrice*float(numField.get()) #updates how much money in stocks you have
     balance = buyMoney #updates the balance in the UI
     cur_bal_txt1.configure(text="$"+str(balance))
     print("ey")
+
 #    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
    # moneyLeft.config(text="Money to Spend: " + str(buyMoney))
     return()
@@ -117,7 +132,7 @@ def updateMoney():
     totalMoney+=buyMoney #adds on the amount you have to spend
     if totalMoney!=bal_stocks: #if the newly calculated total money is not equal to the old amount, update it in UI
         bal_stocks = totalMoney
-        bal_stocks_txt1.config(text="$"+str(bal_stocks))
+        bal_stocks_txt1.config(text="$"+str(round(bal_stocks, 2)))
     bal_stocks_txt1.after(10000,updateMoney)
 def watchlist_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
@@ -144,37 +159,38 @@ def watchlist_page(name):   #EDIT GRAPH HERE
     graphing.mainloop()
 if True:#Home Page
         #Balance
+    global balance
     balance = buyMoney
-    cur_bal_txt = tkinter.Label(home, height = 1, bg = 'black', fg = 'grey', relief=FLAT)
-    cur_bal_txt.configure(font=("Calibri", 30, ""))
+    cur_bal_txt = tkinter.Label(home, height = 1, bg = 'black', fg = '#C7C7C7', relief=FLAT)
+    cur_bal_txt.configure(font=("Helvetica Neue Bold", 30, ""))
     cur_bal_txt.configure(text="Your Balance:")
-    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(balance))
-    cur_bal_txt.place(x=100,y=100)
+    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Helvetica Neue Bold", 50, "bold"),text="$"+str(balance))
+    cur_bal_txt.place(x=100,y=110)
     cur_bal_txt1.place(x=100,y=150)
 
         #Balance with stocks
     bal_stocks = totalMoney
-    bal_stocks_txt = tkinter.Label(home, bg = 'black', fg = 'grey', relief=FLAT)
-    bal_stocks_txt.configure(font=("Calibri", 30, ""))
+    bal_stocks_txt = tkinter.Label(home, height = 1, bg = 'black', fg = '#C7C7C7', relief=FLAT)
+    bal_stocks_txt.configure(font=("Helvetica Neue Bold", 30, ""))
     bal_stocks_txt.config(text="With Stocks:")
-    bal_stocks_txt1 = Label(home,height=1, bg='black',fg ='white',font=("Calibri", 40, "bold"),text="$"+str(bal_stocks))
-    bal_stocks_txt.place(x=500,y=100)
-    bal_stocks_txt1.place(x=500,y=150)
+    bal_stocks_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Helvetica Neue Bold", 50, "bold"),text="$"+str(round(bal_stocks, 2)))
+    bal_stocks_txt.place(x=400,y=110)
+    bal_stocks_txt1.place(x=400,y=150)
     updateMoney()
             #Bal Increase Today
     inc_num = 500000
-    today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
-    today.configure(font=("Calibri", 30, ""))
+    today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = '#C7C7C7', relief=FLAT)
+    today.configure(font=("Helvetica Neue Bold", 30, ""))
     today.insert(tkinter.END, "Today:\n")
     today.insert(tkinter.END, ' +' + str(inc_num))
     today.tag_add("start", "2.0", "3.0")
-    today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
-    today.place(x=900,y=100)
+    today.tag_config("start", background="#32CD32", foreground="white",font=("Helvetica Neue Bold", 20, "bold"))
+    today.place(x=700,y=110)
     today.config(state=DISABLED)
 
         #Watchlist(Home)
     watchlist_txt = tkinter.Text(home, height = 1, width = len("Priority Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-    watchlist_txt.configure(font=("Calibri", 30, ""))
+    watchlist_txt.configure(font=("HelveticaNeue Bold", 30, ""))
     watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
     watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
     watchlist_txt.config(state=DISABLED)
@@ -197,7 +213,7 @@ if True:#Home Page
 
 if True:#Watchlist
     wlist_txt = tkinter.Text(watchlist, height = 1, width = len("Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-    wlist_txt.configure(font=("Calibri", 30, ""))
+    wlist_txt.configure(font=("HelveticaNeue Bold", 30, ""))
     wlist_txt.insert(tkinter.END, "Watchlist:")
     wlist_txt.place(x=100,y=100)
     wlist_txt.config(state=DISABLED)
@@ -253,7 +269,7 @@ if True:#Watchlist
    
 #Market Page
 graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-graph.configure(font=("Calibri", 30, ""))
+graph.configure(font=("HelveticaNeue Bold", 30, ""))
 graph.insert(tkinter.END, "How do i graph")
 graph.place(x=100,y=400)
 graph.config(state=DISABLED)
@@ -261,7 +277,7 @@ graph.config(state=DISABLED)
 #Portfolio Page
 equity = "100,000,000"
 equity_txt = tkinter.Text(portfolio, height=2, bg = 'black', fg = 'grey', relief=FLAT)
-equity_txt.configure(font=("Calibri", 30, ""))
+equity_txt.configure(font=("HelveticaNeue Bold", 30, ""))
 equity_txt.insert(tkinter.END, "Your Equity:\n")
 equity_txt.insert(tkinter.END, "100,000,000")
 equity_txt.place(x=100,y=100)
