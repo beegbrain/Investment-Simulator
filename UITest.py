@@ -57,41 +57,35 @@ def buyStock(name):
     global totalMoney
     global numField
     global balance
+    global cur_bal_txt
     stockPrice = get_live_price(name)#get the stock price of the wanted stock
     transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
     if transaction <0:
         mb.showerror("Error", "you do not have enough money for this purchase")
         return()
     buyMoney=transaction
-    if str(name.upper()) in invested_before.keys():#stores it in a dictionary
+    if str(name.upper()) in invested_before.keys():#updates the amount of shares and the price of it
         shares[name.upper()] += float(numField.get())
         prices[name.upper()] = stockPrice
-        '''position = stocks[name.upper()][2]
-        newList.delete(position)#updates the list of stocks
-        newList.insert(position, name+"\n"+
-                       str(stocks[nameField.get()]))'''
         
     else:
-        shares[name.upper()] = numField.get()
-        invested_before[name.upper()] = get_live_price(name)
-        prices[name.upper()] = get_live_price(name)
-        stock = yf.Ticker(name)
-        names[name.upper()] = stock.info['shortName']
-    stockMoney += stockPrice*float(numField.get())
-    balance = buyMoney
-    cur_bal_txt.delete('1.0','end')
-    cur_bal_txt.insert('1.0', "Balance:")
-    cur_bal_txt.insert('2.0', str(balance))
-    cur_bal_txt.tag_add("id", "2.0", "3.0")#select tag indexes (lines 2-3)
-    cur_bal_txt.tag_config("id", background="black", foreground="white",font=("Calibri", 40, "bold"))#change tag to white and bigger font
+        shares[name.upper()] = numField.get() #stores the # of shares you bought
+        invested_before[name.upper()] = get_live_price(name) #stores the price you bought it at
+        prices[name.upper()] = get_live_price(name) #stores the live price
+        stock = yf.Ticker(name) 
+        names[name.upper()] = stock.info['shortName'] #stores the actual company name
+    stockMoney += stockPrice*float(numField.get()) #updates how much money in stocks you have
+    balance = buyMoney #updates the balance in the UI
+    cur_bal_txt1.configure(text="$"+str(balance))
     print("ey")
+#    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
    # moneyLeft.config(text="Money to Spend: " + str(buyMoney))
     return()
 def sellStock(name): #this function allows the user to sell stocks
     global buyMoney
     global stockMoney
     global totalMoney
-    if(name.upper() not in shares.keys()):
+    if(name.upper() not in shares.keys()): # if you don't have enough stocks to sell show a popup error
         mb.showerror("Error", "you do not own any of this stock")
         return()
     elif(int(numField.get())>shares[name]):
@@ -108,24 +102,23 @@ def sellStock(name): #this function allows the user to sell stocks
     else:
         shares[name]-=1
     stockMoney-=stockPrice
-    #moneyLeft.config(text="Money to Spend: " + str(buyMoney))
+    balance = buyMoney #updates the balance in the UI
+    cur_bal_txt1.configure(text="$"+str(balance))
     return()
 def updateMoney():
     global bal_stocks
     global totalMoney
     global bal_stocks_txt
     print("yes")
-    totalMoney = 0
-    for key in shares:
+    totalMoney = 0 
+    for key in shares: #counts how much money you have in stocks
         prices[key] = get_live_price(key)
         totalMoney+=float(prices[key])*float(shares[key])
-    totalMoney+=buyMoney
+    totalMoney+=buyMoney #adds on the amount you have to spend
     if totalMoney!=bal_stocks: #if the newly calculated total money is not equal to the old amount, update it in UI
         bal_stocks = totalMoney
-        bal_stocks_txt.delete('1.0','end')
-        bal_stocks_txt.insert('1.0', "With Stocks:")
-        bal_stocks_txt.insert('2.0', str(bal_stocks))
-    bal_stocks_txt.after(10000,updateMoney)
+        bal_stocks_txt1.config(text="$"+str(bal_stocks))
+    bal_stocks_txt1.after(10000,updateMoney)
 def watchlist_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
     #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
@@ -152,24 +145,21 @@ def watchlist_page(name):   #EDIT GRAPH HERE
 if True:#Home Page
         #Balance
     balance = buyMoney
-    cur_bal_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
+    cur_bal_txt = tkinter.Label(home, height = 1, bg = 'black', fg = 'grey', relief=FLAT)
     cur_bal_txt.configure(font=("Calibri", 30, ""))
-    cur_bal_txt.insert(tkinter.END, "Your Balance:\n")
-    cur_bal_txt.insert(tkinter.END, '$' + str(balance))
-    cur_bal_txt.tag_add("start", "2.0", "3.0")#select tag indexes (lines 2-3)
-    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))#change tag to white
+    cur_bal_txt.configure(text="Your Balance:")
+    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(balance))
     cur_bal_txt.place(x=100,y=100)
-    cur_bal_txt.config(state=DISABLED)#No Editing text box
+    cur_bal_txt1.place(x=100,y=150)
+
         #Balance with stocks
     bal_stocks = totalMoney
-    bal_stocks_txt = tkinter.Text(home, height = 3, bg = 'black', fg = 'grey', relief=FLAT)
+    bal_stocks_txt = tkinter.Label(home, bg = 'black', fg = 'grey', relief=FLAT)
     bal_stocks_txt.configure(font=("Calibri", 30, ""))
-    bal_stocks_txt.insert(tkinter.END, "With Stocks: \n")
-    bal_stocks_txt.insert(tkinter.END, '$' + str(bal_stocks))
-    bal_stocks_txt.tag_add("start", "2.0", "3.0")
-    bal_stocks_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
+    bal_stocks_txt.config(text="With Stocks:")
+    bal_stocks_txt1 = Label(home,height=1, bg='black',fg ='white',font=("Calibri", 40, "bold"),text="$"+str(bal_stocks))
     bal_stocks_txt.place(x=500,y=100)
-    bal_stocks_txt.config(state=DISABLED)
+    bal_stocks_txt1.place(x=500,y=150)
     updateMoney()
             #Bal Increase Today
     inc_num = 500000
