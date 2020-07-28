@@ -57,24 +57,55 @@ for frame in (home, watchlist, market, portfolio, graphing, search):
     Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=330,y=20)
     Button(frame, text='Search',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=500,y=20)
     
-def graph_page(name):   #EDIT GRAPH HERE 
-    raise_frame(graphing)#Keep this here
-    #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
-    x=np.array ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    y= np.array ([16,16.31925,17.6394,16.003,17.2861,17.3131,19.1259,18.9694,22.0003,22.81226])
-
-    fig = Figure(figsize=(3,3))#increase to make plot bigger
+def xlabel(x):
+    if x==daytime:
+        return "5 minutes"
+    if x==weektime:
+        return "1 hour"
+    else:
+        return "1 day"
+def grapher(x,y,name):
+    try:
+        canvas.delete('all')
+    except:
+        pass
+    fig = Figure(figsize=(5,5))#increase to make plot bigger
     a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
-    a.scatter(y,x,color='red')
-    
-    a.set_title ("Estimation Grid", fontsize=16)
-    a.set_ylabel("Y", fontsize=14)
-    a.set_xlabel("X", fontsize=14)
-
+    a.plot(x,y,color='blue')
+    a.set_title (name+" price", fontsize=16)
+    a.set_ylabel("price", fontsize=14)
+    a.set_xlabel(xlabel(x), fontsize=14)
     canvas = FigureCanvasTkAgg(fig, master=graphing)
     canvas.get_tk_widget().place(x=100,y=100)
     canvas.draw()
     
+def watchlist_page(name):   #EDIT GRAPH HERE 
+    raise_frame(graphing)#Keep this here
+    #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
+    global weektime
+    global yeartime
+    global daytime
+    nflx = yf.Ticker(name)
+    nflx.info
+    yearpricelist=list()
+    for i in nflx.history(period="1y",interval="1d")["Close"]:
+        yearpricelist.append(i)
+    yearprice= np.array(yearpricelist)
+    daypricelist=list()
+    for i in nflx.history(period="1d",interval="5m")["Close"]:
+        daypricelist.append(i)
+    dayprice= np.array(daypricelist)
+    weekpricelist=list()
+    for i in nflx.history(period="5d",interval= "1h")["Close"]:
+        weekpricelist.append(i)
+
+    weekprice= np.array(weekpricelist)
+    weektime=list(range(0,len(weekpricelist)))
+    yeartime=list(range(0,len(yearpricelist)))
+    daytime=list(range(0,len(daypricelist)))
+    Button(graphing, text='Past day',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(daytime,dayprice,name)).place(x=0,y=0)
+    Button(graphing, text='Past 5 days',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(weektime,weekprice,name)).place(x=100,y=0) 
+    Button(graphing, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(yeartime,yearprice,name)).place(x=200,y=0)    
 if True:#Home Page
         #Balance
     prev_bal  = int(datafile[4])
