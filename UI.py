@@ -26,9 +26,7 @@ graphing = Frame(root,width=1280, height=700)
 search = Frame(root,width=1280, height=700)
 
 #Grabbing Data
-photo = PhotoImage(file = r"C:\Users\alexa\Downloads\Code\NWAPW\mag_glass.png")
-photo = photo.subsample(15,15) 
-datafile = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt").read().split()
+datafile = open("data.txt").read().split()
 wlist = eval(datafile[0])#current watchlist
 invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
 shares = eval(datafile[2])
@@ -210,7 +208,7 @@ def find():
     for index in range(0, len(data), 2):
         data[index] = data[index].split(':')
         name.append(data[index][1].replace('"',''))
-    return(names)
+    return(names) 
 butt.config(command=find)
 #Launch Porgram
 home.tkraise()
