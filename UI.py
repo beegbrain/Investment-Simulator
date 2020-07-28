@@ -25,7 +25,9 @@ portfolio = Frame(root,width=1280, height=700)
 graphing = Frame(root,width=1280, height=700)
 
 #Grabbing Data
-datafile = open("data.txt").read().split()
+photo = PhotoImage(file = r"C:\Users\alexa\Downloads\Code\NWAPW\mag_glass.png")
+photo = photo.subsample(15,15) 
+datafile = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt").read().split()
 wlist = eval(datafile[0])#current watchlist
 invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
 shares = eval(datafile[2])
@@ -229,7 +231,30 @@ if True:#Watchlist
                         #share price x amount of shares
                         #profit amount profit %
                     #filling the slots in
-                    buttons[i][j] = Button(frame_buttons, bg='white',relief=FLAT,command=lambda index=index:graph_page(wlist[index]), text=(wlist[index]+"\n$"+str(round(prices[wlist[index]],2)) +" x "  +str(shares[wlist[index]])+ '\n' + str(round(shares[wlist[index]] * prices[wlist[index]] - invested_before[wlist[index]],2)) + ' (' +str(round(shares[wlist[index]] * prices[wlist[index]]/invested_before[wlist[index]],2))+ '%)' + "\n" + names[wlist[index]]))
+                    if frame == portfolio:
+                        buttons[i][j] = Button(frame_buttons, bg='white',
+                           relief=FLAT,
+                           command=lambda index=index:watchlist_page(wlist[index]),
+                           text=(wlist[index]+"\n$"+
+                                 str(round(prices[wlist[index]],2)) + " x "  +
+                                 str(shares[wlist[index]])+'\n' +
+                                 str(round(get_live_price(wlist[index])
+                                                  - invested_before[wlist[index]],2)) +
+                                 ' (' +str(round(get_live_price(wlist[index])/
+                                                 invested_before[wlist[index]],2))+
+                                 '%)' + "\n" + names[wlist[index]]))
+                    else:
+                        buttons[i][j] = Button(frame_buttons, bg='white',
+                                       relief=FLAT,
+                                       command=lambda index=index:watchlist_page(wlist[index]),
+                                       text=(wlist[index]+"\n$"+
+                                             str(round(prices[wlist[index]],2)) + " x "  +
+                                             str(shares[wlist[index]])+'\n' +
+                                             str(round(get_live_price(wlist[index])
+                                                              - invested_before[wlist[index]],2)) +
+                                             ' (' +str(round(get_live_price(wlist[index])/
+                                                             invested_before[wlist[index]],2))+
+                                             '%)' + "\n" + names[wlist[index]]))
                     buttons[i][j].grid(row=i, column=j, sticky='news')
                     index += 1
                 except:
@@ -242,7 +267,9 @@ if True:#Watchlist
         frame_canvas.config(width=first5columns_width + vsb.winfo_width(),
                             height=first5rows_height)
         canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
-        frame_canvas.place(x=100,y=150)#plot
+        if frame == portfolio:
+            frame_canvas.place(x=100,y=250)#plot
+        else:frame_canvas.place(x=100,y=150)
    
 #Market Page
 graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
