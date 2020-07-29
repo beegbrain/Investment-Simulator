@@ -15,9 +15,11 @@ import yfinance as yf
 from yahoo_fin.stock_info import *
 from tkinter import messagebox as mb
 
+
 buyMoney = 10000.0
 stockMoney=0.0
 totalMoney=buyMoney
+
 
 invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
 shares = {"AAPL":1,"TSLA":3,"NFLX":2,"INTL":1,"GOOGL":5}
@@ -46,18 +48,17 @@ for frame in (home, watchlist, market, portfolio, graphing, search):
     frame.grid(row=0,column=0,sticky="nsew")
     #Page Buttons
     Button(frame, text='Home',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=50)
-    Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(watchlist)).place(x=104,y=50)    
-    Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=160,y=50)
+    Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=104,y=50)    
+    Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(portfolio)).place(x=160,y=50)
     Button(frame, text='Search',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=225,y=50)
+    
 def buyStock(name):
     global stockMoney
     global buyMoney
     global totalMoney
     global numField
     global balance
-
     global cur_bal_txt
-
     stockPrice = get_live_price(name)#get the stock price of the wanted stock
     transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
     if transaction <0:
@@ -69,33 +70,16 @@ def buyStock(name):
         prices[name.upper()] = stockPrice
         
     else:
-
-        shares[name.upper()] = numField.get()
-        invested_before[name.upper()] = get_live_price(name)
-        prices[name.upper()] = get_live_price(name)
-        stock = yf.Ticker(name)
-        names[name.upper()] = stock.info['shortName']
-    stockMoney += stockPrice*float(numField.get())
-   
-    balance = update()
-    cur_bal_txt.delete('1.0','end')
-    cur_bal_txt.insert('1.0', "Balance:")
-    cur_bal_txt.insert('2.0', str(balance))
-   
-
-    shares[name.upper()] = numField.get() #stores the # of shares you bought
-    invested_before[name.upper()] = get_live_price(name) #stores the price you boughtit at
-    prices[name.upper()] = get_live_price(name) #stores the live price
-    stock = yf.Ticker(name)
-    names[name.upper()] = stock.info['shortName'] #stores the actual company name
+        shares[name.upper()] = numField.get() #stores the # of shares you bought
+        invested_before[name.upper()] = get_live_price(name) #stores the price you bought it at
+        prices[name.upper()] = get_live_price(name) #stores the live price
+        stock = yf.Ticker(name) 
+        names[name.upper()] = stock.info['shortName'] #stores the actual company name
     stockMoney += stockPrice*float(numField.get()) #updates how much money in stocks you have
     balance = buyMoney #updates the balance in the UI
     cur_bal_txt1.configure(text="$"+str(balance))
-    print("ey")
-
-#    cur_bal_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
-   # moneyLeft.config(text="Money to Spend: " + str(buyMoney))
     return()
+
 def sellStock(name): #this function allows the user to sell stocks
     global buyMoney
     global stockMoney
@@ -120,11 +104,11 @@ def sellStock(name): #this function allows the user to sell stocks
     balance = buyMoney #updates the balance in the UI
     cur_bal_txt1.configure(text="$"+str(balance))
     return()
+
 def updateMoney():
     global bal_stocks
     global totalMoney
     global bal_stocks_txt
-    print("yes")
     totalMoney = 0 
     for key in shares: #counts how much money you have in stocks
         prices[key] = get_live_price(key)
@@ -132,8 +116,31 @@ def updateMoney():
     totalMoney+=buyMoney #adds on the amount you have to spend
     if totalMoney!=bal_stocks: #if the newly calculated total money is not equal to the old amount, update it in UI
         bal_stocks = totalMoney
-        bal_stocks_txt1.config(text="$"+str(round(bal_stocks, 2)))
+        bal_stocks_txt1.config(text="$"+str(bal_stocks))
     bal_stocks_txt1.after(10000,updateMoney)
+
+def updateStocks():
+    global buttons
+    global wlist
+    global names
+    index = 0
+    print("OWO")
+    for i in range(len(buttons)):
+        for j in range(len(buttons[i])):
+            try:
+                buttons[i][j].config(text=(wlist[index]+"\n$"+
+                                    str(round(get_live_price(wlist[index]),2)) + " x "  +
+                                    str(shares[wlist[index]])+'\n' +
+                                    str(round(get_live_price(wlist[index])
+                                    - invested_before[wlist[index]],2)) +
+                                    ' (' +str(round(get_live_price(wlist[index])/
+                                    invested_before[wlist[index]],2))+
+                                    '%)' + "\n" + names[wlist[index]]))
+                index+=1
+            except:
+                break
+    buttons[i][j].after(10000,updateStocks)
+    return()
 def watchlist_page(name):   #EDIT GRAPH HERE 
     raise_frame(graphing)#Keep this here
     #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
@@ -157,40 +164,56 @@ def watchlist_page(name):   #EDIT GRAPH HERE
     sellButton.place(x=650,y=300)
     numField.place(x=500,y=330)
     graphing.mainloop()
+
 if True:#Home Page
         #Balance
-    global balance
     balance = buyMoney
-    cur_bal_txt = tkinter.Label(home, height = 1, bg = 'black', fg = '#C7C7C7', relief=FLAT)
-    cur_bal_txt.configure(font=("Helvetica Neue Bold", 30, ""))
+    cur_bal_txt = tkinter.Label(home, height = 1, bg = 'black', fg = 'grey', relief=FLAT)
+    cur_bal_txt.configure(font=("Calibri", 30, ""))
     cur_bal_txt.configure(text="Your Balance:")
-    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Helvetica Neue Bold", 50, "bold"),text="$"+str(balance))
-    cur_bal_txt.place(x=100,y=110)
+    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(balance))
+    cur_bal_txt.place(x=100,y=100)
     cur_bal_txt1.place(x=100,y=150)
 
         #Balance with stocks
     bal_stocks = totalMoney
-    bal_stocks_txt = tkinter.Label(home, height = 1, bg = 'black', fg = '#C7C7C7', relief=FLAT)
-    bal_stocks_txt.configure(font=("Helvetica Neue Bold", 30, ""))
+    bal_stocks_txt = tkinter.Label(home, bg = 'black', fg = 'grey', relief=FLAT)
+    bal_stocks_txt.configure(font=("Calibri", 30, ""))
     bal_stocks_txt.config(text="With Stocks:")
-    bal_stocks_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Helvetica Neue Bold", 50, "bold"),text="$"+str(round(bal_stocks, 2)))
-    bal_stocks_txt.place(x=400,y=110)
-    bal_stocks_txt1.place(x=400,y=150)
+    bal_stocks_txt1 = Label(home,height=1, bg='black',fg ='white',font=("Calibri", 40, "bold"),text="$"+str(bal_stocks))
+    bal_stocks_txt.place(x=500,y=100)
+    bal_stocks_txt1.place(x=500,y=150)
     updateMoney()
             #Bal Increase Today
     inc_num = 500000
-    today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = '#C7C7C7', relief=FLAT)
-    today.configure(font=("Helvetica Neue Bold", 30, ""))
+    today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
+    today.configure(font=("Calibri", 30, ""))
     today.insert(tkinter.END, "Today:\n")
     today.insert(tkinter.END, ' +' + str(inc_num))
     today.tag_add("start", "2.0", "3.0")
-    today.tag_config("start", background="#32CD32", foreground="white",font=("Helvetica Neue Bold", 20, "bold"))
-    today.place(x=700,y=110)
+    today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
+    today.place(x=900,y=100)
     today.config(state=DISABLED)
 
+def updateHomeList():
+    global scroll_y
+    global highest
+    global prices
+    global invested_before
+    global names
+    scroll_y.destroy()
+    scroll_y = tkinter.Scrollbar(home, orient="vertical")
+    scroll_y.configure(bg='black')
+    for set in highest:
+        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
+    scroll_y.configure()
+    scroll_y.place(relx=0.485, y=330, anchor=CENTER)
+    scroll_y.after(10000,updateHomeList)
+    return()
+if True:
         #Watchlist(Home)
     watchlist_txt = tkinter.Text(home, height = 1, width = len("Priority Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-    watchlist_txt.configure(font=("HelveticaNeue Bold", 30, ""))
+    watchlist_txt.configure(font=("Calibri", 30, ""))
     watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
     watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
     watchlist_txt.config(state=DISABLED)
@@ -202,10 +225,10 @@ if True:#Home Page
     index = 0
     # Show price of stock, profit in %, how many shares
     for set in highest:
-        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(round(prices[set[0]],2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
-        x_coor += len(set[0]+"\n$"+str(set[1]) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]]) * 4
+        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
     scroll_y.configure()
     scroll_y.place(relx=0.485, y=330, anchor=CENTER)
+    updateHomeList()
     
         #Edit
     more = tkinter.Button(home, text="View All",relief=FLAT, width = 6, command = lambda:raise_frame(watchlist))
@@ -213,7 +236,7 @@ if True:#Home Page
 
 if True:#Watchlist
     wlist_txt = tkinter.Text(watchlist, height = 1, width = len("Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-    wlist_txt.configure(font=("HelveticaNeue Bold", 30, ""))
+    wlist_txt.configure(font=("Calibri", 30, ""))
     wlist_txt.insert(tkinter.END, "Watchlist:")
     wlist_txt.place(x=100,y=100)
     wlist_txt.config(state=DISABLED)
@@ -266,22 +289,37 @@ if True:#Watchlist
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=150)#plot
-   
+    updateStocks()
+    
 #Market Page
 graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-graph.configure(font=("HelveticaNeue Bold", 30, ""))
+graph.configure(font=("Calibri", 30, ""))
 graph.insert(tkinter.END, "How do i graph")
 graph.place(x=100,y=400)
 graph.config(state=DISABLED)
 
+equity = 0
+def updatePortfolio():
+    global equity
+    currentPrice =0
+    for key in prices:
+        prices[key]=get_live_price(key)
+        currentPrice+=float(prices[key])*float(shares[key])
+    if currentPrice!=equity:
+        equity = currentPrice
+        
+    
 #Portfolio Page
-equity = "100,000,000"
+for key in prices:
+    prices[key]=get_live_price(key)
+    equity+=float(prices[key])*float(shares[key])
 equity_txt = tkinter.Text(portfolio, height=2, bg = 'black', fg = 'grey', relief=FLAT)
-equity_txt.configure(font=("HelveticaNeue Bold", 30, ""))
+equity_txt.configure(font=("Calibri", 30, ""))
 equity_txt.insert(tkinter.END, "Your Equity:\n")
-equity_txt.insert(tkinter.END, "100,000,000")
+equity_txt.insert(tkinter.END, str(equity))
 equity_txt.place(x=100,y=100)
 equity_txt.config(state=DISABLED)
+
 
 #Search Page
 edit = Entry(search)
