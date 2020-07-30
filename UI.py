@@ -94,7 +94,7 @@ for frame in (watchlist, market, portfolio, graphing, home):
     Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=20)
     Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=180,y=20)    
     Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(portfolio)).place(x=330,y=20)
-    
+#setting x axis labels
 def xlabel(x):
     if x==daytime:
         return "5 minutes"
@@ -102,11 +102,14 @@ def xlabel(x):
         return "1 hour"
     else:
         return "1 day"
+#graphing function
 def grapher(x,y,name):
+#resetting canvas for new graph
     try:
         canvas.delete('all')
     except:
         pass
+#plotting
     fig = Figure(figsize=(5,5))#increase to make plot bigger
     a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
     a.plot(x,y,color='blue')
@@ -126,6 +129,7 @@ def graph_page(name):   #EDIT GRAPH HERE
     nflx = yf.Ticker(name)
     nflx.info
     yearpricelist=list()
+    #getting closing prices for each time period
     for i in nflx.history(period="1y",interval="1d")["Close"]:
         yearpricelist.append(i)
     yearprice= np.array(yearpricelist)
@@ -138,9 +142,11 @@ def graph_page(name):   #EDIT GRAPH HERE
         weekpricelist.append(i)
 
     weekprice= np.array(weekpricelist)
+    #getting x axis 
     weektime=list(range(0,len(weekpricelist)))
     yeartime=list(range(0,len(yearpricelist)))
     daytime=list(range(0,len(daypricelist)))
+    
     Button(graphing, text='Past day',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(daytime,dayprice,name)).place(x=0,y=0)
     Button(graphing, text='Past 5 days',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(weektime,weekprice,name)).place(x=100,y=0) 
     Button(graphing, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(yeartime,yearprice,name)).place(x=200,y=0) 
@@ -278,10 +284,12 @@ def year(ticker):
     ticker = yf.Ticker(ticker)
     ticker.info
     yearpricelist=list()
+    #percentage change for market
     for f, b in zip(ticker.history(period="1y",interval="1d")["Open"], ticker.history(period="1y",interval="1d")["Close"]):
         yearpricelist.append( 100 * (b - f) / f)
     yearprice= np.array(yearpricelist)
     yeartime=list(range(0,len(yearpricelist)))
+    #return x y axis
     return (yeartime,yearprice)
     
 def day(ticker):
@@ -307,6 +315,7 @@ def week(ticker):
 fig = Figure(figsize=(6,6))#increase to make plot bigger
 a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
 def weekgraph():
+    #resetting canvas per button press
     try:
         canvas.delete('all')
     except:
