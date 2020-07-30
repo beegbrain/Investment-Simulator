@@ -271,12 +271,96 @@ if True:#Watchlist
             frame_canvas.place(x=100,y=250)#plot
         else:frame_canvas.place(x=100,y=150)
    
+   
 #Market Page
 graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-graph.configure(font=("Calibri", 30, ""))
-graph.insert(tkinter.END, "How do i graph")
+def year(ticker):
+    ticker = yf.Ticker(ticker)
+    ticker.info
+    yearpricelist=list()
+    for f, b in zip(ticker.history(period="1y",interval="1d")["Open"], ticker.history(period="1y",interval="1d")["Close"]):
+        yearpricelist.append( 100 * (b - f) / f)
+    yearprice= np.array(yearpricelist)
+    yeartime=list(range(0,len(yearpricelist)))
+    return (yeartime,yearprice)
+    
+def day(ticker):
+    ticker = yf.Ticker(ticker)
+    ticker.info
+    daypricelist=list()
+    for f, b in zip(ticker.history(period="1d",interval="5m")["Open"], ticker.history(period="1d",interval="5m")["Close"]):
+        daypricelist.append( 100 * (b - f) / f)
+    dayprice= np.array(daypricelist)
+    daytime=list(range(0,len(daypricelist)))
+    return (daytime,dayprice)
+    
+def week(ticker):
+    weekpricelist=list()
+    ticker = yf.Ticker(ticker)
+    ticker.info
+    for f, b in zip(ticker.history(period="5d",interval= "1h")["Open"], ticker.history(period="5d",interval= "1h")["Close"]):
+        weekpricelist.append( 100 * (b - f) / f)
+    weekprice= np.array(weekpricelist)
+    weektime=list(range(0,len(weekpricelist)))
+    return (weektime,weekprice)
+    
+fig = Figure(figsize=(6,6))#increase to make plot bigger
+a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
+def weekgraph():
+    try:
+        canvas.delete('all')
+    except:
+        pass
+    a.plot(week('NDAQ')[0],week('^IXIC')[1],color='#E5CFAD')
+    a.plot(week('^DJI')[0],week('^DJI')[1],color='#D392A4')
+    a.plot(week('^GSPC')[0],week('^GSPC')[1],color='#98B7C3')
+    a.set_facecolor('black')
+    a.set_title ("Market", fontsize=16)
+    a.set_ylabel("Price", fontsize=14)
+    a.set_xlabel("Day", fontsize=14)  
+    canvas = FigureCanvasTkAgg(fig, master=market)
+    canvas.get_tk_widget().place(x=100,y=100)
+    canvas.draw()
+
+def yeargraph():
+    try:
+        canvas.delete('all')
+    except:
+        pass
+    a.plot(year('NDAQ')[0],year('^IXIC')[1],color='#E5CFAD')
+    a.plot(year('^DJI')[0],year('^DJI')[1],color='#D392A4')
+    a.plot(year('^GSPC')[0],year('^GSPC')[1],color='#98B7C3')
+    a.set_facecolor('black')
+    a.set_title ("Market", fontsize=16)
+    a.set_ylabel("Price", fontsize=14)
+    a.set_xlabel("Hour", fontsize=14)  
+    canvas = FigureCanvasTkAgg(fig, master=market)
+    canvas.get_tk_widget().place(x=100,y=100)
+    canvas.draw()
+
+def daygraph():
+    try:
+        canvas.delete('all')
+    except:
+        pass
+    a.plot(day('NDAQ')[0],day('^IXIC')[1],color='#E5CFAD')
+    a.plot(day('^DJI')[0],day('^DJI')[1],color='#D392A4')
+    a.plot(day('^GSPC')[0],day('^GSPC')[1],color='#98B7C3')
+    a.set_facecolor('black')
+    a.set_title ("Market", fontsize=16)
+    a.set_ylabel("Price", fontsize=14)
+    a.set_xlabel("5 minutes", fontsize=14)  
+    canvas = FigureCanvasTkAgg(fig, master=market)
+    canvas.get_tk_widget().place(x=100,y=100)
+    canvas.draw()
+
+Button(market, text='Past day',fg='black', bg='grey', relief=FLAT, command=lambda:daygraph()).place(x=0,y=300)
+Button(market, text='Past 5 days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=0,y=400) 
+Button(market, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=0,y=500)    
+
 graph.place(x=100,y=400)
 graph.config(state=DISABLED)
+
 
 #Portfolio Page
 equity = "100,000,000"
