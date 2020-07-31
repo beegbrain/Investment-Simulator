@@ -423,14 +423,14 @@ def raise_market():
     market.tkraise()
     graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
     def year(ticker):
-    ticker = yf.Ticker(ticker)
-    ticker.info
-    yearpricelist=list()
-    for f, b in zip(ticker.history(period="1y",interval="5d")["Open"], ticker.history(period="1y",interval="5d")["Close"]):
-        yearpricelist.append( 100 * (b - f) / f)
-    yearprice= np.array(yearpricelist)
-    yeartime=list(range(0,len(yearpricelist)))
-    return (yeartime,yearprice)
+        ticker = yf.Ticker(ticker)
+        ticker.info
+        yearpricelist=list()
+        for f, b in zip(ticker.history(period="1y",interval="5d")["Open"], ticker.history(period="1y",interval="5d")["Close"]):
+            yearpricelist.append( 100 * (b - f) / f)
+        yearprice= np.array(yearpricelist)
+        yeartime=list(range(0,len(yearpricelist)))
+        return (yeartime,yearprice)
     
     def day(ticker):
         ticker = yf.Ticker(ticker)
@@ -438,7 +438,7 @@ def raise_market():
         daypricelist=list()
         for f, b in zip(ticker.history(period="1d",interval="5m")["Open"], ticker.history(period="1d",interval="5m")["Close"]):
             daypricelist.append( 100 * (b - f) / f)
-        dayprice= np.array(daypricelist)+
+        dayprice= np.array(daypricelist)
         daytime=list(range(0,len(daypricelist)))
         return (daytime,dayprice)
 
@@ -491,7 +491,7 @@ def raise_market():
             canvas.delete('all')
         except:
             pass
-        a.plot(day('NDAQ')[0],day('^IXIC')[1],color='#E5CFAD')
+        a.plot(day('^IXIC')[0],day('^IXIC')[1],color='#E5CFAD')
         a.plot(day('^DJI')[0],day('^DJI')[1],color='#D392A4')
         a.plot(day('^GSPC')[0],day('^GSPC')[1],color='#98B7C3')
         a.set_facecolor('black')
@@ -526,7 +526,6 @@ def raise_market():
     legend2.insert(tkinter.END, "S & P 500")
     legend2.place(x=0,y=650)
     legend2.config(state=DISABLED)
-
 equity = 0
 def updatePortfolio():
     global equity
