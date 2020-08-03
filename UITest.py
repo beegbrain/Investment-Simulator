@@ -33,25 +33,100 @@ root.geometry('1280x700')
 root.configure(bg='black')
 home = Frame(root,width=1280, height=700)
 watchlist = Frame(root,width=1280, height=700)
+#Tkinter libraries
+import tkinter
+from tkinter import *
+from tkinter import ttk
+#Matplot/graphing libraries
+import matplotlib
+matplotlib.use('TkAgg')
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import pandas as pd
+#Misc libraries
+from collections import Counter 
+import yfinance as yf
+from yahoo_fin.stock_info import *
+
+root = tkinter.Tk()
+root.title("Investment Simulator")
+root.geometry('1280x700')
+root.configure(bg='black')
+home = Frame(root,width=1280, height=700)
+watchlist = Frame(root,width=1280, height=700)
 market = Frame(root,width=1280, height=700)
 portfolio = Frame(root,width=1280, height=700)
 graphing = Frame(root,width=1280, height=700)
-search = Frame(root,width=1280, height=700)
-global wlist_index
-wlist_index = 0
-def raise_frame(frame):
-    frame.tkraise() #Brings desired frame to the top
-
-for frame in (home, watchlist, market, portfolio, graphing, search):
-    #Set frame to fill page
-    frame.configure(bg="black") #Background Color
-    frame.grid(row=0,column=0,sticky="nsew")
-    #Page Buttons
-    Button(frame, text='Home',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(home)).place(x=50,y=50)
-    Button(frame, text='Market',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(market)).place(x=104,y=50)    
-    Button(frame, text='Portfolio',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(portfolio)).place(x=160,y=50)
-    Button(frame, text='Search',fg='black', bg='grey', relief=FLAT, command=lambda:raise_frame(search)).place(x=225,y=50)
     
+import os
+
+#Grabbing Data
+
+global visible
+datafile = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt").read().split()
+wlist = eval(datafile[0])#current watchlist
+invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
+shares = eval(datafile[2])
+buyMoney = int(datafile[3])
+prev_bal  = int(datafile[4])
+stockMoney=0.0
+totalMoney=buyMoney
+bal_stocks = totalMoney
+prices = dict()
+names = dict()
+for index in wlist:
+    response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+index)
+    data = response.text.split(':')
+    names[index] = data[-1][1:-3]
+
+
+
+
+visible = '..'
+wlist_index = 0
+
+def listbox_list(query):
+    name = list()
+    if query != [] and query != '':
+        response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
+        data = response.text.split(',')
+        if data != []:
+            for index in range(0, len(data), 2):
+                data[index] = data[index].split(':')
+                name.append(data[index][1].replace('"',''))
+    print(query,'a',name)           
+    return name
+def listbox_update(data):
+    global entry
+    #data = listbox_list(entry.get())
+    print("updating search bar",data)
+    # delete previous data
+    try:
+        listbox.delete(0, 'end')
+    except:pass
+    # sorting data 
+    data = sorted(data, key=str.lower)
+    # put new data
+    for item in data:
+        print(item)
+        listbox.insert('end', item)
+def on_change(*args):
+    global test_list
+    value = var_text.get()
+    value = value.strip().lower()
+    if value == '':# get data from test_list
+        data = test_list
+    else:
+        data = []
+        for item in test_list:
+            if value in item.lower():
+                data.append(item)    
+    listbox_update(data)# update data in listbox
+def on_select(event):
+    try:
+        graph_page(event.widget.get(event.widget.curselection()))
+    except:pass
 def buyStock(name):
     global stockMoney
     global buyMoney
@@ -64,6 +139,13 @@ def buyStock(name):
     if transaction <0:
         mb.showerror("Error", "you do not have enough money for this purchase")
         return()
+    elif float(numField.get())<=0:
+        mb.showerror("Error", "You cannot purchase a nonpositive amount of stocks")
+        return()
+    elif int(numField.get()) != float(numField.get()):
+        mb.showerror("Error", "You cannot buy a noninteger amount of stocks")
+        return()
+        
     buyMoney=transaction
     if str(name.upper()) in invested_before.keys():#updates the amount of shares and the price of it
         shares[name.upper()] += float(numField.get())
@@ -79,16 +161,22 @@ def buyStock(name):
     balance = buyMoney #updates the balance in the UI
     cur_bal_txt1.configure(text="$"+str(balance))
     return()
-
 def sellStock(name): #this function allows the user to sell stocks
     global buyMoney
     global stockMoney
     global totalMoney
+    global bal_stocks
     if(name.upper() not in shares.keys()): # if you don't have enough stocks to sell show a popup error
         mb.showerror("Error", "you do not own any of this stock")
         return()
     elif(int(numField.get())>shares[name]):
         mb.showerror("Error", "you do not have enough stocks for this transaction")
+        return()
+    elif float(numField.get())<=0:
+        mb.showerror("Error", "You cannot sell a nonpositive amount of stocks")
+        return()
+    elif int(numField.get()) != float(numField.get()):
+        mb.showerror("Error", "You cannot sell a noninteger amount of stocks")
         return()
     stockPrice = get_live_price(name)#get the live price of a stock
     prices[name] = stockPrice #update stock price
@@ -104,8 +192,8 @@ def sellStock(name): #this function allows the user to sell stocks
     balance = buyMoney #updates the balance in the UI
     cur_bal_txt1.configure(text="$"+str(balance))
     return()
-
 def updateMoney():
+    print('updating money')
     global bal_stocks
     global totalMoney
     global bal_stocks_txt
@@ -116,71 +204,179 @@ def updateMoney():
     totalMoney+=buyMoney #adds on the amount you have to spend
     if totalMoney!=bal_stocks: #if the newly calculated total money is not equal to the old amount, update it in UI
         bal_stocks = totalMoney
-        bal_stocks_txt1.config(text="$"+str(bal_stocks))
+        bal_stocks_txt1.config(text="$"+str(round(bal_stocks,2)))
+    print('successful')
     bal_stocks_txt1.after(10000,updateMoney)
-
 def updateStocks():
+    print('updating stocks')
     global buttons
+    global pbuttons
     global wlist
     global names
     index = 0
-    print("OWO")
-    for i in range(len(buttons)):
-        for j in range(len(buttons[i])):
-            try:
-                buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                    str(round(get_live_price(wlist[index]),2)) + " x "  +
-                                    str(shares[wlist[index]])+'\n' +
-                                    str(round(get_live_price(wlist[index])
-                                    - invested_before[wlist[index]],2)) +
-                                    ' (' +str(round(get_live_price(wlist[index])/
-                                    invested_before[wlist[index]],2))+
-                                    '%)' + "\n" + names[wlist[index]]))
-                index+=1
-            except:
-                break
-    buttons[i][j].after(10000,updateStocks)
-    return()
-def watchlist_page(name):   #EDIT GRAPH HERE 
-    raise_frame(graphing)#Keep this here
-    #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
-    x=np.array ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    y= np.array ([16,16.31925,17.6394,16.003,17.2861,17.3131,19.1259,18.9694,22.0003,22.81226])
-
-    fig = Figure(figsize=(3,3))#increase to make plot bigger
-    a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
-    a.scatter(y,x,color='red')
+    try:
+        if visible == 'watchlist':
+            print('successful ')
+            for i in range(len(buttons)):
+                for j in range(len(buttons[i])):
+                    try:
+                        buttons[i][j].config(text=(wlist[index]+"\n$"+
+                                            str(round(get_live_price(wlist[index]),2)) + " x "  +
+                                            str(shares[wlist[index]])+'\n' +
+                                            str(round(get_live_price(wlist[index]) * shares[wlist[index]]
+                                            - invested_before[wlist[index]],2)) +
+                                            ' (' +str(round(get_live_price(wlist[index])/
+                                            invested_before[wlist[index]],2))+
+                                            '%)' + "\n" + names[wlist[index]]))
+                        index+=1
+                    except:
+                        break
+        buttons[i][j].after(20000,updateStocks)
+    except:pass
+    try:
+        if visible == 'portfolio':
+            print('successful')
+            for i in range(len(pbuttons)):
+                for j in range(len(pbuttons[i])):
+                    try:
+                        pbuttons[i][j].config(text=(wlist[index]+"\n$"+
+                                            str(round(get_live_price(wlist[index]),2)) + " x "  +
+                                            str(shares[wlist[index]])+'\n' +
+                                            str(round(get_live_price(wlist[index]) * shares[wlist[index]]
+                                            - invested_before[wlist[index]],2)) +
+                                            ' (' +str(round(get_live_price(wlist[index])/
+                                            invested_before[wlist[index]],2))+
+                                            '%)' + "\n" + names[wlist[index]]))
+                        index+=1
+                    except:
+                        break
+        pbuttons[i][j].after(20000,updateStocks)
+    except:pass
+    if visible != 'watchlist' and visible != 'portfolio':print('suspended')
     
-    a.set_title ("Estimation Grid", fontsize=16)
-    a.set_ylabel("Y", fontsize=14)
-    a.set_xlabel("X", fontsize=14)
-
+    
+    
+def updateHomeList():
+    print('updating home watchlist')
+    global scroll_y
+    global highest
+    global prices
+    global invested_before
+    global names
+    if visible == 'home':
+        print('successful ')
+        scroll_y.destroy()
+        scroll_y = tkinter.Scrollbar(home, orient="vertical")
+        scroll_y.configure(bg='black')
+        for set in highest:
+            Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
+        scroll_y.configure()
+        scroll_y.place(relx=0.485, y=330, anchor=CENTER)
+    else:
+        print('suspended')
+    scroll_y.after(10000,updateHomeList)
+for frame in (watchlist, market, portfolio, graphing, home):
+    #Set frame to fill page
+    frame.configure(bg="black") #Background Color
+    frame.grid(row=0,column=0,sticky="nsew")
+    #Page Buttons
+    global test_list
+    global entry
+    test_list = ''
+    var_text = StringVar()
+    var_text.trace('w', on_change)
+    entry = Entry(frame, textvariable=var_text)
+    entry.place(relx=0.7,y=50)
+    entry.bind('<KeyRelease>', on_change)
+    listbox = Listbox(frame, height = 2)
+    listbox.place(relx=0.7,y=65)
+    listbox.bind('<<ListboxSelect>>', on_select)
+    test_list = listbox_list(var_text.get())
+    listbox_update(test_list)
+    Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_home()).place(x=50,y=20)
+    Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_market()).place(x=180,y=20)    
+    Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_portfolio()).place(x=330,y=20)
+  
+def xlabel(x):
+    if x==daytime:
+        return "5 minutes"
+    if x==weektime:
+        return "1 hour"
+    else:
+        return "1 day"
+def grapher(x,y,name):
+    try:
+        canvas.delete('all')
+    except:
+        pass
+    fig = Figure(figsize=(5,5))#increase to make plot bigger
+    a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
+    a.plot(x,y,color='blue')
+    a.set_title (name+" Price", fontsize=16)
+    a.set_ylabel("Price", fontsize=13)
+    a.set_xlabel(xlabel(x), fontsize=13)
     canvas = FigureCanvasTkAgg(fig, master=graphing)
-    canvas.get_tk_widget().place(x=100,y=100)
+    canvas.get_tk_widget().place(x=150,y=150)
     canvas.draw()
-    buyButton= Button(graphing, width=21,text="BUY",command=lambda:buyStock(name))
-    buyButton.place(x=500,y=300)
-    sellButton=Button(graphing, width=21,text="SELL",command=lambda:sellStock(name))
-    sellButton.place(x=650,y=300)
-    numField.place(x=500,y=330)
-    graphing.mainloop()
+    
+def graph_page(name):   #EDIT GRAPH HERE 
+    visible = 'graphing'
+    graphing.tkraise()#Keep this here
+    #Edit everything after this line  (make sure the frame name is graphing, not root/master/self/frame .....)
+    global weektime
+    global yeartime
+    global daytime
+    global numField
+    numField = Entry(graphing, width=50)
+    nflx = yf.Ticker(name)
+    nflx.info
+    yearpricelist=list()
+    for i in nflx.history(period="1y",interval="1d")["Close"]:
+        yearpricelist.append(i)
+    yearprice= np.array(yearpricelist)
+    daypricelist=list()
+    for i in nflx.history(period="1d",interval="5m")["Close"]:
+        daypricelist.append(i)
+    dayprice= np.array(daypricelist)
+    weekpricelist=list()
+    for i in nflx.history(period="5d",interval= "1h")["Close"]:
+        weekpricelist.append(i)
 
-if True:#Home Page
+    weekprice= np.array(weekpricelist)
+    weektime=list(range(0,len(weekpricelist)))
+    yeartime=list(range(0,len(yearpricelist)))
+    daytime=list(range(0,len(daypricelist)))
+    Button(graphing, text='Past day',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(daytime,dayprice,name)).place(x=150,y=120)
+    Button(graphing, text='Past 5 days',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(weektime,weekprice,name)).place(x=210,y=120) 
+    Button(graphing, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(yeartime,yearprice,name)).place(x=285,y=120) 
+    grapher(daytime,dayprice,name)#default graph
+    buyButton= Button(graphing, width=21,text="BUY",command=lambda:buyStock(name))
+    buyButton.place(x=700,y=300)
+    sellButton=Button(graphing, width=21,text="SELL",command=lambda:sellStock(name))
+    sellButton.place(x=850,y=300)
+    numField.place(x=700,y=330)
+    graphing.mainloop()
+    
+def raise_home():
+    global visible
+    visible = 'home'
+    print('now on HOME')
         #Balance
+    home.tkraise()
     balance = buyMoney
     cur_bal_txt = tkinter.Label(home, height = 1, bg = 'black', fg = 'grey', relief=FLAT)
     cur_bal_txt.configure(font=("Calibri", 30, ""))
     cur_bal_txt.configure(text="Your Balance:")
-    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(balance))
+    cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(round(balance,2)))
     cur_bal_txt.place(x=100,y=100)
     cur_bal_txt1.place(x=100,y=150)
 
         #Balance with stocks
-    bal_stocks = totalMoney
     bal_stocks_txt = tkinter.Label(home, bg = 'black', fg = 'grey', relief=FLAT)
     bal_stocks_txt.configure(font=("Calibri", 30, ""))
     bal_stocks_txt.config(text="With Stocks:")
-    bal_stocks_txt1 = Label(home,height=1, bg='black',fg ='white',font=("Calibri", 40, "bold"),text="$"+str(bal_stocks))
+    global bal_stocks_txt1
+    bal_stocks_txt1 = Label(home,height=1, bg='black',fg ='white',font=("Calibri", 40, "bold"),text="$"+str(round(bal_stocks,2)))
     bal_stocks_txt.place(x=500,y=100)
     bal_stocks_txt1.place(x=500,y=150)
     updateMoney()
@@ -194,54 +390,44 @@ if True:#Home Page
     today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
     today.place(x=900,y=100)
     today.config(state=DISABLED)
-
-def updateHomeList():
-    global scroll_y
-    global highest
-    global prices
-    global invested_before
-    global names
-    scroll_y.destroy()
-    scroll_y = tkinter.Scrollbar(home, orient="vertical")
-    scroll_y.configure(bg='black')
-    for set in highest:
-        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
-    scroll_y.configure()
-    scroll_y.place(relx=0.485, y=330, anchor=CENTER)
-    scroll_y.after(10000,updateHomeList)
-    return()
-if True:
-        #Watchlist(Home)
-    watchlist_txt = tkinter.Text(home, height = 1, width = len("Priority Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
-    watchlist_txt.configure(font=("Calibri", 30, ""))
-    watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
-    watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
-    watchlist_txt.config(state=DISABLED)
-    k = Counter(shares) 
-    highest = k.most_common(3) # Finding 3 highest values 
-    x_coor=0
-    scroll_y = tkinter.Scrollbar(home, orient="vertical")
-    scroll_y.configure(bg='black')
-    index = 0
-    # Show price of stock, profit in %, how many shares
-    for set in highest:
-        Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:watchlist_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
-    scroll_y.configure()
-    scroll_y.place(relx=0.485, y=330, anchor=CENTER)
-    updateHomeList()
     
-        #Edit
-    more = tkinter.Button(home, text="View All",relief=FLAT, width = 6, command = lambda:raise_frame(watchlist))
-    more.place(relx=0.485, y=285, anchor = CENTER)
+    if True:
+            #Watchlist(Home)
+        watchlist_txt = tkinter.Text(home, height = 1, width = len("Priority Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
+        watchlist_txt.configure(font=("Calibri", 30, ""))
+        watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
+        watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
+        watchlist_txt.config(state=DISABLED)
+        k = Counter(shares) 
+        global highest
+        highest = k.most_common(3) # Finding 3 highest values 
+        x_coor=0
+        global scroll_y
+        scroll_y = tkinter.Scrollbar(home, orient="vertical")
+        scroll_y.configure(bg='black')
+        index = 0
+        # Show price of stock, profit in %, how many shares
+        for set in highest:
+            Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
+        scroll_y.configure()
+        scroll_y.place(relx=0.485, y=330, anchor=CENTER)
+        updateHomeList()
+            #Edit
+        more = tkinter.Button(home, text="View All",relief=FLAT, width = 6, command = lambda:raise_watchlist())
+        more.place(relx=0.485, y=285, anchor = CENTER)
 
-if True:#Watchlist
+
+def raise_watchlist():
+    global visible
+    visible = 'watchlist'
+    print('now on WATCHLIST')
+    watchlist.tkraise()
     wlist_txt = tkinter.Text(watchlist, height = 1, width = len("Watchlist:"), bg = 'black', fg = 'white', relief=FLAT)
     wlist_txt.configure(font=("Calibri", 30, ""))
     wlist_txt.insert(tkinter.END, "Watchlist:")
     wlist_txt.place(x=100,y=100)
     wlist_txt.config(state=DISABLED)
-
-    numField = Entry(graphing, width=50)
+    
     frame_canvas = Frame(watchlist)# Create a frame for the canvas with non-zero row&column weights
     frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')#plot grid
     frame_canvas.grid_rowconfigure(0, weight=1)#set size
@@ -257,6 +443,7 @@ if True:#Watchlist
     rows = 10# Add buttons to the frame
     columns = 10
     index=0
+    global buttons
     buttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
     for i in range(0, rows):
         for j in range(0, columns):
@@ -267,7 +454,7 @@ if True:#Watchlist
                 #filling the slots in
                 buttons[i][j] = Button(frame_buttons, bg='white',
                                        relief=FLAT,
-                                       command=lambda index=index:watchlist_page(wlist[index]),
+                                       command=lambda index=index:graph_page(wlist[index]),
                                        text=(wlist[index]+"\n$"+
                                              str(round(prices[wlist[index]],2)) + " x "  +
                                              str(shares[wlist[index]])+'\n' +
@@ -290,13 +477,17 @@ if True:#Watchlist
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=150)#plot
     updateStocks()
-    
-#Market Page
-graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-graph.configure(font=("Calibri", 30, ""))
-graph.insert(tkinter.END, "How do i graph")
-graph.place(x=100,y=400)
-graph.config(state=DISABLED)
+   
+def raise_market():
+    global visible
+    visible = 'market'
+    print('now on MARKET')
+    market.tkraise()
+    graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
+    graph.configure(font=("Calibri", 30, ""))
+    graph.insert(tkinter.END, "How do i graph")
+    graph.place(x=100,y=400)
+    graph.config(state=DISABLED)
 
 equity = 0
 def updatePortfolio():
@@ -307,32 +498,76 @@ def updatePortfolio():
         currentPrice+=float(prices[key])*float(shares[key])
     if currentPrice!=equity:
         equity = currentPrice
+
+def raise_portfolio():
+    global visible
+    visible = 'portfolio'
+    print('now on PORTFOLIO')
+    portfolio.tkraise()
+    equity_txt = tkinter.Text(portfolio, bg = 'black', fg = 'grey', relief=FLAT)
+    equity_txt.configure(font=("Calibri", 30, ""))
+    equity_txt.insert(tkinter.END, "Your Equity:\n$")
+    equity_txt.insert(tkinter.END, equity)
+    equity_txt.tag_add("start", "2.0", "3.0")#select tag indexes (lines 2-3)
+    equity_txt.tag_config("start", background="black", foreground="white",font=("Calibri", 40, "bold"))
+    equity_txt.place(x=100,y=100)
+    equity_txt.config(state=DISABLED)
+    your_stocks = tkinter.Text(portfolio, height=1, bg = 'black', fg = 'white', relief=FLAT)
+    your_stocks.configure(font=("Calibri", 35, ""))
+    your_stocks.insert(tkinter.END, "Your Stocks:")
+    your_stocks.place(x=100,y=230)
+    your_stocks.config(state=DISABLED)
         
-    
-#Portfolio Page
-for key in prices:
-    prices[key]=get_live_price(key)
-    equity+=float(prices[key])*float(shares[key])
-equity_txt = tkinter.Text(portfolio, height=2, bg = 'black', fg = 'grey', relief=FLAT)
-equity_txt.configure(font=("Calibri", 30, ""))
-equity_txt.insert(tkinter.END, "Your Equity:\n")
-equity_txt.insert(tkinter.END, str(equity))
-equity_txt.place(x=100,y=100)
-equity_txt.config(state=DISABLED)
+    frame_canvas = Frame(portfolio)# Create a frame for the canvas with non-zero row&column weights
+    frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='nw')#plot grid
+    frame_canvas.grid_rowconfigure(0, weight=1)#set size
+    frame_canvas.grid_columnconfigure(0, weight=1)
+    frame_canvas.grid_propagate(False)# Set grid_propagate to False to allow 5-by-5 buttons resizing later
+    canvas = Canvas(frame_canvas, bg="white")# Add a canvas in that frame
+    canvas.grid(row=0, column=0, sticky="news")#"news" means north,east,west,south  ... covers the entire canvas
+    vsb = Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)# Link a scrollbar to the canvas
+    vsb.grid(row=0, column=1, sticky='ns')#covers from top to bottom (the scroll bar)
+    canvas.configure(yscrollcommand=vsb.set)#link scrollbar to canvas
+    frame_buttons = Frame(canvas, bg="white")# Create a frame to contain the buttons
+    canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
+    rows = 10# Add buttons to the frame
+    columns = 10
+    index=0
+    global pbuttons
+    pbuttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
+    for i in range(0, rows):
+        for j in range(0, columns):
+            try:
+                    #name, ticker
+                    #share price x amount of shares
+                    #profit amount profit %
+                #filling the slots in
+                pbuttons[i][j] = Button(frame_buttons, bg='white',
+                               relief=FLAT,
+                               command=lambda index=index:graph_page(wlist[index]),
+                               text=(wlist[index]+"\n$"+
+                                    str(round(prices[wlist[index]],2)) + " x "  +
+                                    str(shares[wlist[index]])+'\n' +
+                                    str(round(get_live_price(wlist[index])
+                                                  - invested_before[wlist[index]],2)) +
+                                    ' (' +str(round(get_live_price(wlist[index])/
+                                                 invested_before[wlist[index]],2))+
+                                    '%)' + "\n" + names[wlist[index]]))
+                pbuttons[i][j].grid(row=i, column=j, sticky='news')
+                index += 1
+            except:
+                #once the index is invalid/wlist is out of items, break loop because all slots are filled
+                break
+    frame_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
+    first5columns_width = sum([pbuttons[0][j].winfo_width() for j in range(0, columns)])# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
+    first5rows_height = sum([pbuttons[i][0].winfo_height() for i in range(0, rows)])
+    frame_canvas.config(width=first5columns_width + vsb.winfo_width(),
+                        height=first5rows_height)
+    canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
+    frame_canvas.place(x=100,y=300)#plot
+    updateStocks()
 
 
-#Search Page
-edit = Entry(search)
-edit.place(relx=0.5,y=50)
-edit.focus_set()
-butt = Button(search, text='Find')
-butt.place(relx=0.4,y=50)
-def find():
-    query = edit.get()
-    returnData = pd.read_csv("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
-    print(returnData)
-butt.config(command=find)
-
+raise_home()
 #Launch Porgram
-home.tkraise()
 root.mainloop()
