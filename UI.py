@@ -24,7 +24,7 @@ market = Frame(root,width=1280, height=700)
 portfolio = Frame(root,width=1280, height=700)
 graphing = Frame(root,width=1280, height=700)
     
-
+import os
 
 #Grabbing Data
 
@@ -47,10 +47,37 @@ for index in wlist:
 
 
 
+
 visible = '..'
 wlist_index = 0
 
+def listbox_list(query):
+    name = list()
+    if query != [] and query != '':
+        response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
+        data = response.text.split(',')
+        if data != []:
+            for index in range(0, len(data), 2):
+                data[index] = data[index].split(':')
+                name.append(data[index][1].replace('"',''))
+    print(query,'a',name)           
+    return name
+def listbox_update(data):
+    global entry
+    #data = listbox_list(entry.get())
+    print("updating search bar",data)
+    # delete previous data
+    try:
+        listbox.delete(0, 'end')
+    except:pass
+    # sorting data 
+    data = sorted(data, key=str.lower)
+    # put new data
+    for item in data:
+        print(item)
+        listbox.insert('end', item)
 def on_change(*args):
+    global test_list
     value = var_text.get()
     value = value.strip().lower()
     if value == '':# get data from test_list
@@ -61,20 +88,6 @@ def on_change(*args):
             if value in item.lower():
                 data.append(item)    
     listbox_update(data)# update data in listbox
-def listbox_update(enter):
-    name = list()
-    if enter != [] and enter != '':
-        query = enter
-        print('a',query)
-        response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+query)
-        data = response.text.split(',')
-        if data != []:
-            for index in range(0, len(data), 2):
-                data[index] = data[index].split(':')
-                name.append(data[index][1].replace('"',''))
-                listbox.insert('end', data[index][1].replace('"',''))
-    print(enter,'a',name)
-    return name
 def on_select(event):
     try:
         graph_page(event.widget.get(event.widget.curselection()))
@@ -170,7 +183,7 @@ def updateStocks():
                         index+=1
                     except:
                         break
-        buttons[i][j].after(10000,updateStocks)
+        buttons[i][j].after(20000,updateStocks)
     except:pass
     try:
         if visible == 'portfolio':
@@ -189,7 +202,7 @@ def updateStocks():
                         index+=1
                     except:
                         break
-        pbuttons[i][j].after(10000,updateStocks)
+        pbuttons[i][j].after(20000,updateStocks)
     except:pass
     if visible != 'watchlist' and visible != 'portfolio':print('suspended')
     
@@ -220,22 +233,22 @@ for frame in (watchlist, market, portfolio, graphing, home):
     frame.grid(row=0,column=0,sticky="nsew")
     #Page Buttons
     global test_list
+    global entry
     test_list = ''
     var_text = StringVar()
     var_text.trace('w', on_change)
-    butt = Button(frame, text='Go')
     entry = Entry(frame, textvariable=var_text)
     entry.place(relx=0.7,y=50)
-    butt.place(relx=0.68,y=50)
+    entry.bind('<KeyRelease>', on_change)
     listbox = Listbox(frame, height = 2)
     listbox.place(relx=0.7,y=65)
-    listbox_update(entry.get())
-    test_list = listbox_update(entry.get())
-    butt.config(command = lambda:[listbox_update(entry.get()),listbox.bind('<<ListboxSelect>>', on_select)])
+    listbox.bind('<<ListboxSelect>>', on_select)
+    test_list = listbox_list(var_text.get())
+    listbox_update(test_list)
     Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_home()).place(x=50,y=20)
     Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_market()).place(x=180,y=20)    
     Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_portfolio()).place(x=330,y=20)
-    
+  
 def xlabel(x):
     if x==daytime:
         return "5 minutes"
@@ -420,112 +433,14 @@ def raise_watchlist():
 def raise_market():
     global visible
     visible = 'market'
+    print('now on MARKET')
     market.tkraise()
     graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-    def year(ticker):
-        ticker = yf.Ticker(ticker)
-        ticker.info
-        yearpricelist=list()
-        for f, b in zip(ticker.history(period="1y",interval="5d")["Open"], ticker.history(period="1y",interval="5d")["Close"]):
-            yearpricelist.append( 100 * (b - f) / f)
-        yearprice= np.array(yearpricelist)
-        yeartime=list(range(0,len(yearpricelist)))
-        return (yeartime,yearprice)
-    
-    def day(ticker):
-        ticker = yf.Ticker(ticker)
-        ticker.info
-        daypricelist=list()
-        for f, b in zip(ticker.history(period="1d",interval="5m")["Open"], ticker.history(period="1d",interval="5m")["Close"]):
-            daypricelist.append( 100 * (b - f) / f)
-        dayprice= np.array(daypricelist)
-        daytime=list(range(0,len(daypricelist)))
-        return (daytime,dayprice)
-
-    def week(ticker):
-        weekpricelist=list()
-        ticker = yf.Ticker(ticker)
-        ticker.info
-        for f, b in zip(ticker.history(period="5d",interval= "1h")["Open"], ticker.history(period="5d",interval= "1h")["Close"]):
-            weekpricelist.append( 100 * (b - f) / f)
-        weekprice= np.array(weekpricelist)
-        weektime=list(range(0,len(weekpricelist)))
-        return (weektime,weekprice)
-
-    fig = Figure(figsize=(6,6))#increase to make plot bigger
-    a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
-    def weekgraph():
-        try:
-            canvas.delete('all')
-        except:
-            pass
-        a.plot(week('^IXIC')[0],week('^IXIC')[1],color='#E5CFAD')
-        a.plot(week('^DJI')[0],week('^DJI')[1],color='#D392A4')
-        a.plot(week('^GSPC')[0],week('^GSPC')[1],color='#98B7C3')
-        a.set_facecolor('black')
-        a.set_title ("Market", fontsize=16)
-        a.set_ylabel("Price", fontsize=14)
-        a.set_xlabel("Hour", fontsize=14)  
-        canvas = FigureCanvasTkAgg(fig, master=market)
-        canvas.get_tk_widget().place(x=100,y=100)
-        canvas.draw()
-
-    def yeargraph():
-        try:
-            canvas.delete('all')
-        except:
-            pass
-        a.plot(year('^IXIC')[0],year('^IXIC')[1],color='#E5CFAD')
-        a.plot(year('^DJI')[0],year('^DJI')[1],color='#D392A4')
-        a.plot(year('^GSPC')[0],year('^GSPC')[1],color='#98B7C3')
-        a.set_facecolor('black')
-        a.set_title ("Market", fontsize=16)
-        a.set_ylabel("Price", fontsize=14)
-        a.set_xlabel("5 Days", fontsize=14)  
-        canvas = FigureCanvasTkAgg(fig, master=market)
-        canvas.get_tk_widget().place(x=100,y=100)
-        canvas.draw()
-
-    def daygraph():
-        try:
-            canvas.delete('all')
-        except:
-            pass
-        a.plot(day('^IXIC')[0],day('^IXIC')[1],color='#E5CFAD')
-        a.plot(day('^DJI')[0],day('^DJI')[1],color='#D392A4')
-        a.plot(day('^GSPC')[0],day('^GSPC')[1],color='#98B7C3')
-        a.set_facecolor('black')
-        a.set_title ("Market", fontsize=16)
-        a.set_ylabel("Price", fontsize=14)
-        a.set_xlabel("5 minutes", fontsize=14)  
-        canvas = FigureCanvasTkAgg(fig, master=market)
-        canvas.get_tk_widget().place(x=100,y=100)
-        canvas.draw()
-
-    Button(market, text='Past day',fg='black', bg='grey', relief=FLAT, command=lambda:daygraph()).place(x=0,y=300)
-    Button(market, text='Past 5 days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=0,y=400) 
-    Button(market, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=0,y=500)    
-
+    graph.configure(font=("Calibri", 30, ""))
+    graph.insert(tkinter.END, "How do i graph")
     graph.place(x=100,y=400)
     graph.config(state=DISABLED)
 
-    legend = tkinter.Text(market, height=1, width=7, bg = '#E5CFAD', fg = 'black', relief=FLAT)
-    legend.configure(font=("Calibri", 15, ""))
-    legend.insert(tkinter.END, "Nasdaq")
-    legend.place(x=0,y=550)
-    legend.config(state=DISABLED)
-
-    legend1 = tkinter.Text(market, height=1, width=9, bg = '#D392A4', fg = 'black', relief=FLAT)
-    legend1.configure(font=("Calibri", 15, ""))
-    legend1.insert(tkinter.END, "Dow Jones")
-    legend1.place(x=0,y=600)
-    legend1.config(state=DISABLED)
-
-    legend2 = tkinter.Text(market, height=1, width=8, bg = '#98B7C3', fg = 'black', relief=FLAT)
-    legend2.configure(font=("Calibri", 15, ""))
-    legend2.insert(tkinter.END, "S & P 500")
-    legend2.place(x=0,y=650)
-    legend2.config(state=DISABLED)
 equity = 0
 def updatePortfolio():
     global equity
@@ -539,6 +454,7 @@ def updatePortfolio():
 def raise_portfolio():
     global visible
     visible = 'portfolio'
+    print('now on PORTFOLIO')
     portfolio.tkraise()
     equity_txt = tkinter.Text(portfolio, bg = 'black', fg = 'grey', relief=FLAT)
     equity_txt.configure(font=("Calibri", 30, ""))
@@ -602,7 +518,8 @@ def raise_portfolio():
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
     updateStocks()
-    
+
+
 raise_home()
 #Launch Porgram
 root.mainloop()
