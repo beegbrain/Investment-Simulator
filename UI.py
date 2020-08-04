@@ -2,6 +2,7 @@
 import tkinter
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox as mb
 #Matplot/graphing libraries
 import matplotlib
 matplotlib.use('TkAgg')
@@ -29,10 +30,12 @@ import os
 #Grabbing Data
 
 global visible
+global cur_bal_txt1
 datafile = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt").read().split()
 wlist = eval(datafile[0])#current watchlist
 invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
 shares = eval(datafile[2])
+balance = 0
 buyMoney = int(datafile[3])
 prev_bal  = int(datafile[4])
 stockMoney=0.0
@@ -45,7 +48,7 @@ for index in wlist:
     response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+index)
     data = response.text.split(':')
     names[index] = data[-1][1:-3]
-    equity += get_live_price(wlist[index]) * shares[wlist[index]]
+    equity += get_live_price(index) * shares[index]
 
 
 
@@ -96,7 +99,6 @@ def buyStock(name):
     global totalMoney
     global numField
     global balance
-    global cur_bal_txt
     stockPrice = get_live_price(name)#get the stock price of the wanted stock
     transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
     if transaction <0:
@@ -299,6 +301,7 @@ def graph_page(name):   #EDIT GRAPH HERE
     global yeartime
     global daytime
     global numField
+    global cur_bal_txt1
     numField = Entry(graphing, width=50)
     nflx = yf.Ticker(name)
     nflx.info
@@ -323,14 +326,15 @@ def graph_page(name):   #EDIT GRAPH HERE
     Button(graphing, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(yeartime,yearprice,name)).place(x=285,y=120) 
     grapher(daytime,dayprice,name)#default graph
     buyButton= Button(graphing, width=21,text="BUY",command=lambda:buyStock(name))
-    buyButton.place(x=700,y=300)
+    buyButton.place(x=750,y=300)
     sellButton=Button(graphing, width=21,text="SELL",command=lambda:sellStock(name))
-    sellButton.place(x=850,y=300)
-    numField.place(x=700,y=330)
+    sellButton.place(x=900,y=300)
+    numField.place(x=750,y=330)
     graphing.mainloop()
-    
+
 def raise_home():
     global visible
+    global cur_bal_txt1
     visible = 'home'
     print('now on HOME')
         #Balance
@@ -342,7 +346,6 @@ def raise_home():
     cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(round(balance,2)))
     cur_bal_txt.place(x=100,y=100)
     cur_bal_txt1.place(x=100,y=150)
-
         #Balance with stocks
     bal_stocks_txt = tkinter.Label(home, bg = 'black', fg = 'grey', relief=FLAT)
     bal_stocks_txt.configure(font=("Calibri", 30, ""))
@@ -387,7 +390,7 @@ def raise_home():
             #Edit
         more = tkinter.Button(home, text="View All",relief=FLAT, width = 6, command = lambda:raise_watchlist())
         more.place(relx=0.485, y=285, anchor = CENTER)
-
+    
 
 def raise_watchlist():
     global visible
@@ -647,8 +650,27 @@ def raise_portfolio():
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
     updateStocks()
-
-
 raise_home()
+def write():
+    prev_bal = int(datafile[4])
+    bal = cur_bal_txt1.cget('text')[1:]
+    f = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt", 'r+')
+    f.truncate(0)
+    f.write(str(wlist).replace(' ','')+'\n')
+    invested_before = {}
+    for index in wlist:
+        invested_before[index] = get_live_price(index) * shares[index]
+    f.write(str(invested_before).replace(' ','')+'\n')
+    f.write(str(shares).replace(' ','')+'\n')
+    f.write(str(cur_bal_txt1.cget('text'))[1:]+'\n')
+    f.write(str(prev_bal))
+    f.close()
+    root.after(4000, write)
+#wlist
+#invested_before
+#shares
+#buy money
+#prev_bal
+write()
 #Launch Porgram
 root.mainloop()
