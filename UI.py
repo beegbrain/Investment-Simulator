@@ -270,14 +270,15 @@ for frame in (watchlist, market, portfolio, graphing, home):
     Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_home()).place(x=50,y=20)
     Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_market()).place(x=180,y=20)    
     Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_portfolio()).place(x=330,y=20)
-  
-def xlabel(x):
+#labels x axis 
+def xlabel(x): 
     if x==daytime:
         return "5 minutes"
     if x==weektime:
         return "1 hour"
     else:
         return "1 day"
+#makes graph for each time period
 def grapher(x,y,name):
     try:
         canvas.delete('all')
@@ -305,19 +306,20 @@ def graph_page(name):   #EDIT GRAPH HERE
     numField = Entry(graphing, width=50)
     nflx = yf.Ticker(name)
     nflx.info
-    yearpricelist=list()
+    yearpricelist=list() #gets all closing prices for a year
     for i in nflx.history(period="1y",interval="1d")["Close"]:
         yearpricelist.append(i)
     yearprice= np.array(yearpricelist)
-    daypricelist=list()
+    daypricelist=list()#gets all closing prices for a day
     for i in nflx.history(period="1d",interval="5m")["Close"]:
         daypricelist.append(i)
     dayprice= np.array(daypricelist)
-    weekpricelist=list()
+    weekpricelist=list()#gets all closing prices for a week
     for i in nflx.history(period="5d",interval= "1h")["Close"]:
         weekpricelist.append(i)
 
     weekprice= np.array(weekpricelist)
+    #makes the x axis
     weektime=list(range(0,len(weekpricelist)))
     yeartime=list(range(0,len(yearpricelist)))
     daytime=list(range(0,len(daypricelist)))
@@ -462,6 +464,7 @@ def raise_market():
         ticker = yf.Ticker(ticker)
         ticker.info
         yearpricelist=list()
+        #gets percentage change for a year
         for f, b in zip(ticker.history(period="1y",interval="5d")["Open"], ticker.history(period="1y",interval="5d")["Close"]):
             yearpricelist.append( 100 * (b - f) / f)
         yearprice= np.array(yearpricelist)
@@ -472,6 +475,7 @@ def raise_market():
         ticker = yf.Ticker(ticker)
         ticker.info
         daypricelist=list()
+        #gets percentage change for a day
         for f, b in zip(ticker.history(period="1d",interval="5m")["Open"], ticker.history(period="1d",interval="5m")["Close"]):
             daypricelist.append( 100 * (b - f) / f)
         dayprice= np.array(daypricelist)
@@ -482,6 +486,7 @@ def raise_market():
         weekpricelist=list()
         ticker = yf.Ticker(ticker)
         ticker.info
+        #gets percentage change for a week
         for f, b in zip(ticker.history(period="5d",interval= "1h")["Open"], ticker.history(period="5d",interval= "1h")["Close"]):
             weekpricelist.append( 100 * (b - f) / f)    
         weekprice= np.array(weekpricelist)
@@ -491,11 +496,13 @@ def raise_market():
     fig = Figure(figsize=(6,5))#increase to make plot bigger
     fig.patch.set_facecolor('black')
     a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
-    def weekgraph():
+    def weekgraph(): #makes graphs for three markets from a period of a week
+        #delete previous graph
         try:
             canvas.delete('all')
         except:
             pass
+        #plots three markets
         a.plot(week('^IXIC')[0],week('^IXIC')[1],color='#E5CFAD')
         a.plot(week('^DJI')[0],week('^DJI')[1],color='#D392A4')
         a.plot(week('^GSPC')[0],week('^GSPC')[1],color='#98B7C3')
@@ -511,7 +518,8 @@ def raise_market():
         canvas.get_tk_widget().place(x=100,y=100)
         canvas.draw()
 
-    def yeargraph():
+    def yeargraph():#makes graphs for three markets from a period of a year
+        #delete previous graph
         try:
             canvas.delete('all')
         except:
@@ -530,7 +538,8 @@ def raise_market():
         canvas = FigureCanvasTkAgg(fig, master=market)
         canvas.get_tk_widget().place(x=100,y=100)
         canvas.draw()
-    def daygraph():
+    def daygraph():#makes graphs for three markets from a period of a day
+        #delete previous graph
         try:
             canvas.delete('all')
         except:
@@ -554,7 +563,7 @@ def raise_market():
     Button(market, text='Past 5 Days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=810,y=150)
     Button(market, text='Past Year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=885,y=150)  
     
-
+    #the legend for the graph
     legend1 = tkinter.Text(market, height=1, width=7, bg = '#E5CFAD', fg = 'black', relief=FLAT)
     legend1.configure(font=("Calibri", 15, ""))
     legend1.insert(tkinter.END, "NASDAQ")
