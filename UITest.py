@@ -16,6 +16,7 @@ import yfinance as yf
 from yahoo_fin.stock_info import *
 import os
 import time
+import datetime
 root = tkinter.Tk()
 root.title("Investment Simulator")
 root.geometry('1280x700')
