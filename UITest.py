@@ -196,9 +196,9 @@ def updateStocks():
                         buttons[i][j].config(text=(wlist[index]+"\n$"+
                                             str(round(get_live_price(wlist[index]),2)) + '\n' +
                                             str(round(get_live_price(wlist[index])
-                                            - ticker.history(period='1d')['Open'],2)) +
+                                            - int(ticker.history(period='1d')['Open']),2)) +
                                             ' (' +str(round(get_live_price(wlist[index])/
-                                            ticker.history(period='1d')['Open'],2))+
+                                            int(ticker.history(period='1d')['Open']),2))+
                                             '%)' + "\n" + names[wlist[index]]))
                         index+=1
                     except:
@@ -452,9 +452,9 @@ def raise_watchlist():
                                        command=lambda index=index:graph_page(wlist[index]),
                                        text=(wlist[index]+"\n$"+
                                              str(round(get_live_price(wlist[index]),2) +'\n' +
-                                             str(round(get_live_price(wlist[index]) - ticker.history(period='1d')['Open'],2)) +
-                                             ' (' +str(round(get_live_price(wlist[index])/ticker.history(period='1d')['Open'],2))+
-                                             '%)' + "\n" + names[wlist[index]]))
+                                             str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                             ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                             '%)' + "\n" + names[wlist[index]])))
                 buttons[i][j].grid(row=i, column=j, sticky='news')
                 index += 1
             except:
