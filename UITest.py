@@ -2,41 +2,7 @@
 import tkinter
 from tkinter import *
 from tkinter import ttk
-#Matplot/graphing libraries
-import matplotlib
-matplotlib.use('TkAgg')
-import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-import pandas as pd
-#Misc libraries
-from collections import Counter 
-import yfinance as yf
-from yahoo_fin.stock_info import *
 from tkinter import messagebox as mb
-
-
-buyMoney = 10000.0
-stockMoney=0.0
-totalMoney=buyMoney
-
-
-invested_before = {"AAPL":384.77,"TSLA":1627.63,"NFLX":410.34,"INTL":398.93,"GOOGL":1453}  #The day before? depends... you choose what data to put
-shares = {"AAPL":1,"TSLA":3,"NFLX":2,"INTL":1,"GOOGL":5}
-prices = {"AAPL":get_live_price('aapl'),"TSLA":get_live_price('tsla'),"NFLX":get_live_price('nflx'),"INTL":get_live_price('intl'),"GOOGL":get_live_price('googl')}
-names = {"AAPL":"Apple Inc.","TSLA":"Tesla Inc.","NFLX":"Netflix Inc.","INTL":"Intel Inc.","GOOGL":"Google"}   #Put the names you want to show here
-wlist = ["AAPL","TSLA","NFLX","INTL","GOOGL"]#current watchlist
-    
-root = tkinter.Tk()
-root.title("Investment Simulator")
-root.geometry('1280x700')
-root.configure(bg='black')
-home = Frame(root,width=1280, height=700)
-watchlist = Frame(root,width=1280, height=700)
-#Tkinter libraries
-import tkinter
-from tkinter import *
-from tkinter import ttk
 #Matplot/graphing libraries
 import matplotlib
 matplotlib.use('TkAgg')
@@ -48,6 +14,7 @@ import pandas as pd
 from collections import Counter 
 import yfinance as yf
 from yahoo_fin.stock_info import *
+import os
 
 root = tkinter.Tk()
 root.title("Investment Simulator")
@@ -64,13 +31,16 @@ import os
 #Grabbing Data
 
 global visible
-datafile = open(r"C:\Users\alexa\Downloads\Code\NWAPW\data.txt").read().split()
+global cur_bal_txt1
+datafile = open(os.path.dirname(os.path.abspath(__file__)) + "\data.txt").read().split()
 wlist = eval(datafile[0])#current watchlist
 invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
 shares = eval(datafile[2])
+balance = 0
 buyMoney = int(datafile[3])
 prev_bal  = int(datafile[4])
 stockMoney=0.0
+equity = 0
 totalMoney=buyMoney
 bal_stocks = totalMoney
 prices = dict()
@@ -79,6 +49,7 @@ for index in wlist:
     response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+index)
     data = response.text.split(':')
     names[index] = data[-1][1:-3]
+    equity += get_live_price(index) * shares[index]
 
 
 
@@ -94,34 +65,30 @@ def listbox_list(query):
         if data != []:
             for index in range(0, len(data), 2):
                 data[index] = data[index].split(':')
-                name.append(data[index][1].replace('"',''))
-    print(query,'a',name)           
-    return name
+                name.append(data[index][1].replace('"',''))          
+    return name[:2]
 def listbox_update(data):
     global entry
-    #data = listbox_list(entry.get())
-    print("updating search bar",data)
-    # delete previous data
-    try:
-        listbox.delete(0, 'end')
-    except:pass
-    # sorting data 
-    data = sorted(data, key=str.lower)
-    # put new data
-    for item in data:
-        print(item)
-        listbox.insert('end', item)
+    data = listbox_list(entry.get())
+    if data != []:
+        print("updating search bar",entry.get())
+        # delete previous data
+        try:
+            listbox.delete(0, 'end')
+        except:pass
+        # sorting data 
+        data = sorted(data, key=str.lower)
+        # put new data
+        for item in data:
+            listbox.insert('end', item)
 def on_change(*args):
     global test_list
     value = var_text.get()
     value = value.strip().lower()
-    if value == '':# get data from test_list
-        data = test_list
-    else:
-        data = []
-        for item in test_list:
-            if value in item.lower():
-                data.append(item)    
+    data = []
+    for item in test_list:
+        if value in item.lower():
+            data.append(item)    
     listbox_update(data)# update data in listbox
 def on_select(event):
     try:
@@ -133,7 +100,6 @@ def buyStock(name):
     global totalMoney
     global numField
     global balance
-    global cur_bal_txt
     stockPrice = get_live_price(name)#get the stock price of the wanted stock
     transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
     if transaction <0:
@@ -152,6 +118,7 @@ def buyStock(name):
         prices[name.upper()] = stockPrice
         
     else:
+        wlist.append(name.upper())
         shares[name.upper()] = numField.get() #stores the # of shares you bought
         invested_before[name.upper()] = get_live_price(name) #stores the price you bought it at
         prices[name.upper()] = get_live_price(name) #stores the live price
@@ -166,6 +133,8 @@ def sellStock(name): #this function allows the user to sell stocks
     global stockMoney
     global totalMoney
     global bal_stocks
+    print(int(numField.get()))
+    print(shares[name])
     if(name.upper() not in shares.keys()): # if you don't have enough stocks to sell show a popup error
         mb.showerror("Error", "you do not own any of this stock")
         return()
@@ -182,7 +151,10 @@ def sellStock(name): #this function allows the user to sell stocks
     prices[name] = stockPrice #update stock price
     buyMoney = buyMoney+stockPrice #updates how much spending money you have
     if shares[name] == 1:#updates the stock count/portfolio
-        shares.pop(name.upper(),None)
+        shares[name] = shares[names] - int(numField.get())
+        if shares[name] == 0:
+            del shares[name]
+            del names[name]
         invested_before.pop(name.upper(),None)
         prices.pop(name.upper(),None)
         names.pop(name.upper(),None)
@@ -206,7 +178,7 @@ def updateMoney():
         bal_stocks = totalMoney
         bal_stocks_txt1.config(text="$"+str(round(bal_stocks,2)))
     print('successful')
-    bal_stocks_txt1.after(10000,updateMoney)
+    bal_stocks_txt1.after(20000,updateMoney)
 def updateStocks():
     print('updating stocks')
     global buttons
@@ -220,13 +192,13 @@ def updateStocks():
             for i in range(len(buttons)):
                 for j in range(len(buttons[i])):
                     try:
+                        ticker = yf.Ticker(wlist[index])
                         buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) + " x "  +
-                                            str(shares[wlist[index]])+'\n' +
-                                            str(round(get_live_price(wlist[index]) * shares[wlist[index]]
-                                            - invested_before[wlist[index]],2)) +
+                                            str(round(get_live_price(wlist[index]),2)) + '\n' +
+                                            str(round(get_live_price(wlist[index])
+                                            - ticker.history(period='1d')['Open'],2)) +
                                             ' (' +str(round(get_live_price(wlist[index])/
-                                            invested_before[wlist[index]],2))+
+                                            ticker.history(period='1d')['Open'],2))+
                                             '%)' + "\n" + names[wlist[index]]))
                         index+=1
                     except:
@@ -253,9 +225,18 @@ def updateStocks():
         pbuttons[i][j].after(20000,updateStocks)
     except:pass
     if visible != 'watchlist' and visible != 'portfolio':print('suspended')
-    
-    
-    
+def updateEquity():
+    print('updating equity')
+    global equity
+    global wlist
+    global equity_txt
+    temp = 0
+    for index in wlist:
+        temp += get_live_price(wlist[index]) * shares[wlist[index]]
+    if temp != equity:
+        equity_txt.config(text='$'+str(round(equity,2)))
+    print('succesful')
+    equity_txt.after(25000,updateEquity)
 def updateHomeList():
     print('updating home watchlist')
     global scroll_y
@@ -274,7 +255,7 @@ def updateHomeList():
         scroll_y.place(relx=0.485, y=330, anchor=CENTER)
     else:
         print('suspended')
-    scroll_y.after(10000,updateHomeList)
+    scroll_y.after(20000,updateHomeList)
 for frame in (watchlist, market, portfolio, graphing, home):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
@@ -309,7 +290,7 @@ def grapher(x,y,name):
         canvas.delete('all')
     except:
         pass
-    fig = Figure(figsize=(5,5))#increase to make plot bigger
+    fig = Figure(figsize=(6,5))#increase to make plot bigger
     a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
     a.plot(x,y,color='blue')
     a.set_title (name+" Price", fontsize=16)
@@ -318,7 +299,17 @@ def grapher(x,y,name):
     canvas = FigureCanvasTkAgg(fig, master=graphing)
     canvas.get_tk_widget().place(x=150,y=150)
     canvas.draw()
-    
+def startWatching(stock):
+    global wlist
+    ticker = yf.Ticker(stock)
+    wlist.append(stock.upper())
+    names[stock.upper()]=ticker.info['shortName']
+    return()
+def stopWatching(stock):
+    if stock in wlist:
+        wlist.remove(stock)
+        names.pop(stock.upper())
+    return()
 def graph_page(name):   #EDIT GRAPH HERE 
     visible = 'graphing'
     graphing.tkraise()#Keep this here
@@ -327,6 +318,7 @@ def graph_page(name):   #EDIT GRAPH HERE
     global yeartime
     global daytime
     global numField
+    global cur_bal_txt1
     numField = Entry(graphing, width=50)
     nflx = yf.Ticker(name)
     nflx.info
@@ -351,14 +343,17 @@ def graph_page(name):   #EDIT GRAPH HERE
     Button(graphing, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(yeartime,yearprice,name)).place(x=285,y=120) 
     grapher(daytime,dayprice,name)#default graph
     buyButton= Button(graphing, width=21,text="BUY",command=lambda:buyStock(name))
-    buyButton.place(x=700,y=300)
+    buyButton.place(x=750,y=300)
     sellButton=Button(graphing, width=21,text="SELL",command=lambda:sellStock(name))
-    sellButton.place(x=850,y=300)
-    numField.place(x=700,y=330)
+    sellButton.place(x=900,y=300)
+    numField.place(x=750,y=330)
+    addWatchlist = Button(graphing,width=42, text="Add to Watchlist",command=lambda:startWatching(name))
+    delWatchlist = Button(graphing,width=42, text="Remove from Watchlist",command=lambda:stopWatching(name))
     graphing.mainloop()
-    
+
 def raise_home():
     global visible
+    global cur_bal_txt1
     visible = 'home'
     print('now on HOME')
         #Balance
@@ -370,7 +365,6 @@ def raise_home():
     cur_bal_txt1 = tkinter.Label(home,height = 1,bg='black',fg='white',font=("Calibri", 40, "bold"),text="$"+str(round(balance,2)))
     cur_bal_txt.place(x=100,y=100)
     cur_bal_txt1.place(x=100,y=150)
-
         #Balance with stocks
     bal_stocks_txt = tkinter.Label(home, bg = 'black', fg = 'grey', relief=FLAT)
     bal_stocks_txt.configure(font=("Calibri", 30, ""))
@@ -381,7 +375,7 @@ def raise_home():
     bal_stocks_txt1.place(x=500,y=150)
     updateMoney()
             #Bal Increase Today
-    inc_num = 500000
+    inc_num = round(balance-prev_bal,2)
     today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
     today.configure(font=("Calibri", 30, ""))
     today.insert(tkinter.END, "Today:\n")
@@ -415,7 +409,7 @@ def raise_home():
             #Edit
         more = tkinter.Button(home, text="View All",relief=FLAT, width = 6, command = lambda:raise_watchlist())
         more.place(relx=0.485, y=285, anchor = CENTER)
-
+    
 
 def raise_watchlist():
     global visible
@@ -448,20 +442,18 @@ def raise_watchlist():
     for i in range(0, rows):
         for j in range(0, columns):
             try:
-                    #name, ticker
-                    #share price x amount of shares
-                    #profit amount profit %
+                #name, ticker
+                #share price x amount of shares
+                #profit amount profit %
                 #filling the slots in
+                ticker = yf.Ticker(wlist[index])
                 buttons[i][j] = Button(frame_buttons, bg='white',
                                        relief=FLAT,
                                        command=lambda index=index:graph_page(wlist[index]),
                                        text=(wlist[index]+"\n$"+
-                                             str(round(prices[wlist[index]],2)) + " x "  +
-                                             str(shares[wlist[index]])+'\n' +
-                                             str(round(get_live_price(wlist[index])
-                                                              - invested_before[wlist[index]],2)) +
-                                             ' (' +str(round(get_live_price(wlist[index])/
-                                                             invested_before[wlist[index]],2))+
+                                             str(round(get_live_price(wlist[index]),2) +'\n' +
+                                             str(round(get_live_price(wlist[index]) - ticker.history(period='1d')['Open'],2)) +
+                                             ' (' +str(round(get_live_price(wlist[index])/ticker.history(period='1d')['Open'],2))+
                                              '%)' + "\n" + names[wlist[index]]))
                 buttons[i][j].grid(row=i, column=j, sticky='news')
                 index += 1
@@ -483,13 +475,122 @@ def raise_market():
     visible = 'market'
     print('now on MARKET')
     market.tkraise()
-    graph = tkinter.Text(market, bg = 'black', fg = 'grey', relief=FLAT,height=1)
-    graph.configure(font=("Calibri", 30, ""))
-    graph.insert(tkinter.END, "How do i graph")
-    graph.place(x=100,y=400)
-    graph.config(state=DISABLED)
+    def year(ticker):
+        ticker = yf.Ticker(ticker)
+        ticker.info
+        yearpricelist=list()
+        for f, b in zip(ticker.history(period="1y",interval="5d")["Open"], ticker.history(period="1y",interval="5d")["Close"]):
+            yearpricelist.append( 100 * (b - f) / f)
+        yearprice= np.array(yearpricelist)
+        yeartime=list(range(0,len(yearpricelist)))
+        return (yeartime,yearprice)
+    
+    def day(ticker):
+        ticker = yf.Ticker(ticker)
+        ticker.info
+        daypricelist=list()
+        for f, b in zip(ticker.history(period="1d",interval="5m")["Open"], ticker.history(period="1d",interval="5m")["Close"]):
+            daypricelist.append( 100 * (b - f) / f)
+        dayprice= np.array(daypricelist)
+        daytime=list(range(0,len(daypricelist)))
+        return (daytime,dayprice)
 
-equity = 0
+    def week(ticker):
+        weekpricelist=list()
+        ticker = yf.Ticker(ticker)
+        ticker.info
+        for f, b in zip(ticker.history(period="5d",interval= "1h")["Open"], ticker.history(period="5d",interval= "1h")["Close"]):
+            weekpricelist.append( 100 * (b - f) / f)    
+        weekprice= np.array(weekpricelist)
+        weektime=list(range(0,len(weekpricelist)))
+        return (weektime,weekprice)
+
+    fig = Figure(figsize=(6,5))#increase to make plot bigger
+    fig.patch.set_facecolor('black')
+    a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
+    def weekgraph():
+        try:
+            canvas.delete('all')
+        except:
+            pass
+        a.plot(week('^IXIC')[0],week('^IXIC')[1],color='#E5CFAD')
+        a.plot(week('^DJI')[0],week('^DJI')[1],color='#D392A4')
+        a.plot(week('^GSPC')[0],week('^GSPC')[1],color='#98B7C3')
+        a.set_facecolor('black')
+        a.set_title ("Market", fontsize=14, color = "white")
+        a.set_ylabel("Price", fontsize=14)
+        a.set_xlabel("Hour", fontsize=14)  
+        a.xaxis.label.set_color('white')
+        a.tick_params(axis='x', colors='white')
+        a.yaxis.label.set_color('white')
+        a.tick_params(axis='y', colors='white')
+        canvas = FigureCanvasTkAgg(fig, master=market)
+        canvas.get_tk_widget().place(x=100,y=100)
+        canvas.draw()
+
+    def yeargraph():
+        try:
+            canvas.delete('all')
+        except:
+            pass
+        a.plot(year('^IXIC')[0],year('^IXIC')[1],color='#E5CFAD')
+        a.plot(year('^DJI')[0],year('^DJI')[1],color='#D392A4')
+        a.plot(year('^GSPC')[0],year('^GSPC')[1],color='#98B7C3')
+        a.set_facecolor('black')
+        a.set_title ("Market", fontsize=14, color = "white")
+        a.set_ylabel("Price", fontsize=14)
+        a.set_xlabel("5 Days", fontsize=14)  
+        a.xaxis.label.set_color('white')
+        a.tick_params(axis='x', colors='white')
+        a.yaxis.label.set_color('white')
+        a.tick_params(axis='y', colors='white')
+        canvas = FigureCanvasTkAgg(fig, master=market)
+        canvas.get_tk_widget().place(x=100,y=100)
+        canvas.draw()
+    def daygraph():
+        try:
+            canvas.delete('all')
+        except:
+            pass
+        a.plot(day('^IXIC')[0],day('^IXIC')[1],color='#E5CFAD')
+        a.plot(day('^DJI')[0],day('^DJI')[1],color='#D392A4')
+        a.plot(day('^GSPC')[0],day('^GSPC')[1],color='#98B7C3')
+        a.set_facecolor('black')
+        a.set_title ("Market", fontsize=14, color = "white")
+        a.set_ylabel("Price", fontsize=14)
+        a.set_xlabel("5 minutes", fontsize=14)  
+        a.xaxis.label.set_color('white')
+        a.tick_params(axis='x', colors='white')
+        a.yaxis.label.set_color('white')
+        a.tick_params(axis='y', colors='white')
+        canvas = FigureCanvasTkAgg(fig, master=market)
+        canvas.get_tk_widget().place(x=100,y=100)
+        canvas.draw()
+
+    Button(market, text='Past Day',fg='black', bg='grey', relief=FLAT, command=lambda:daygraph()).place(x=750,y=150)
+    Button(market, text='Past 5 Days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=810,y=150)
+    Button(market, text='Past Year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=885,y=150)  
+    
+
+    legend1 = tkinter.Text(market, height=1, width=7, bg = '#E5CFAD', fg = 'black', relief=FLAT)
+    legend1.configure(font=("Calibri", 15, ""))
+    legend1.insert(tkinter.END, "NASDAQ")
+    legend1.place(x=750,y=300)
+    legend1.config(state=DISABLED)
+
+    legend2 = tkinter.Text(market, height=1, width=9, bg = '#D392A4', fg = 'black', relief=FLAT)
+    legend2.configure(font=("Calibri", 15, ""))
+    legend2.insert(tkinter.END, "Dow Jones")
+    legend2.place(x=750,y=330)
+    legend2.config(state=DISABLED)
+
+    legend3 = tkinter.Text(market, height=1, width=8, bg = '#98B7C3', fg = 'black', relief=FLAT)
+    legend3.configure(font=("Calibri", 15, ""))
+    legend3.insert(tkinter.END, "S & P 500")
+    legend3.place(x=750,y=360)
+    legend3.config(state=DISABLED)
+
+
 def updatePortfolio():
     global equity
     currentPrice =0
@@ -566,8 +667,28 @@ def raise_portfolio():
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
     updateStocks()
-
-
 raise_home()
+def write():
+    print('saving data.....')
+    prev_bal = int(datafile[4])
+    bal = cur_bal_txt1.cget('text')[1:]
+    f = open(os.path.dirname(os.path.abspath(__file__)) + "\data.txt", 'r+')
+    f.truncate(0)
+    f.write(str(wlist).replace(' ','')+'\n')
+    invested_before = {}
+    for index in wlist:
+        invested_before[index] = get_live_price(index) * shares[index]
+    f.write(str(invested_before).replace(' ','')+'\n')
+    f.write(str(shares).replace(' ','')+'\n')
+    f.write(str(cur_bal_txt1.cget('text'))[1:]+'\n')
+    f.write(str(prev_bal))
+    f.close()
+    root.after(10000, write)
+#wlist
+#invested_before
+#shares
+#buy money
+#prev_bal
+write()
 #Launch Porgram
 root.mainloop()
