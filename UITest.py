@@ -15,7 +15,7 @@ from collections import Counter
 import yfinance as yf
 from yahoo_fin.stock_info import *
 import os
-
+import time
 root = tkinter.Tk()
 root.title("Investment Simulator")
 root.geometry('1280x700')
@@ -111,6 +111,9 @@ def buyStock(name):
     elif int(numField.get()) != float(numField.get()):
         mb.showerror("Error", "You cannot buy a noninteger amount of stocks")
         return()
+    elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
+        mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        return()
         
     buyMoney=transaction
     if str(name.upper()) in invested_before.keys():#updates the amount of shares and the price of it
@@ -146,6 +149,9 @@ def sellStock(name): #this function allows the user to sell stocks
         return()
     elif int(numField.get()) != float(numField.get()):
         mb.showerror("Error", "You cannot sell a noninteger amount of stocks")
+        return()
+    elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
+        mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
         return()
     stockPrice = get_live_price(name)#get the live price of a stock
     prices[name] = stockPrice #update stock price
@@ -221,7 +227,7 @@ def updateStocks():
                 except:
                     break
         pbuttons[i][j].after(20000,updateStocks)
-    if visible != 'watchlist' and visible != 'portfolio':print('suspended')
+    elif visible != 'watchlist' and visible != 'portfolio':print('suspended')
 def updateEquity():
     print('updating equity')
     global equity
