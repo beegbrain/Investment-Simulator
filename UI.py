@@ -284,15 +284,21 @@ def grapher(x,y,name):
         canvas.delete('all')
     except:
         pass
-    fig = Figure(figsize=(6,5))#increase to make plot bigger
+    fig = Figure(figsize=(5,5))#increase to make plot bigger
+    fig.patch.set_facecolor('black')
     a = fig.add_subplot(111)#scale??? bigger the number, the smaller the size
-    a.plot(x,y,color='blue')
-    a.set_title (name+" Price", fontsize=16)
-    a.set_ylabel("Price", fontsize=13)
-    a.set_xlabel(xlabel(x), fontsize=13)
+    a.plot(x,y,color='#98B7C3')
+    a.set_facecolor('black')
+    a.set_title (name+" price", fontsize=14, color = "white")
+    a.set_ylabel("", fontsize=14)
+    a.set_xlabel("5 Days", fontsize=14)  
+    a.xaxis.label.set_color('white')
+    a.tick_params(axis='x', colors='white')
+    a.yaxis.label.set_color('white')
+    a.tick_params(axis='y', colors='white')
     canvas = FigureCanvasTkAgg(fig, master=graphing)
     canvas.get_tk_widget().place(x=150,y=150)
-    canvas.draw()
+    canvas.draw()    
     
 def graph_page(name):   #EDIT GRAPH HERE 
     visible = 'graphing'
