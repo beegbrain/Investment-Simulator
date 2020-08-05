@@ -186,44 +186,41 @@ def updateStocks():
     global wlist
     global names
     index = 0
-    try:
-        if visible == 'watchlist':
-            print('successful ')
-            for i in range(len(buttons)):
-                for j in range(len(buttons[i])):
-                    try:
-                        ticker = yf.Ticker(wlist[index])
-                        buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) + '\n' +
-                                            str(round(get_live_price(wlist[index])
-                                            - int(ticker.history(period='1d')['Open']),2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/
-                                            int(ticker.history(period='1d')['Open']),2))+
-                                            '%)' + "\n" + names[wlist[index]]))
-                        index+=1
-                    except:
-                        break
+    if visible == 'watchlist':
+        print('successful ')
+        for i in range(len(buttons)):
+            for j in range(len(buttons[i])):
+                try:
+                    ticker = yf.Ticker(wlist[index])
+                    buttons[i][j].config(text=(wlist[index]+"\n$"+
+                                        str(round(get_live_price(wlist[index]),2)) + '\n' +
+                                        str(round(get_live_price(wlist[index])
+                                        - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(wlist[index])/
+                                        int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[wlist[index]]))
+                    index+=1
+                except:
+                    break
         buttons[i][j].after(20000,updateStocks)
-    except:pass
-    try:
-        if visible == 'portfolio':
-            print('successful')
-            for i in range(len(pbuttons)):
-                for j in range(len(pbuttons[i])):
-                    try:
-                        pbuttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) + " x "  +
-                                            str(shares[wlist[index]])+'\n' +
-                                            str(round(get_live_price(wlist[index]) * shares[wlist[index]]
-                                            - invested_before[wlist[index]],2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/
-                                            invested_before[wlist[index]],2))+
-                                            '%)' + "\n" + names[wlist[index]]))
-                        index+=1
-                    except:
-                        break
+    
+    elif visible == 'portfolio':
+        print('successful')
+        for i in range(len(pbuttons)):
+            for j in range(len(pbuttons[i])):
+                try:
+                    pbuttons[i][j].config(text=(wlist[index]+"\n$"+
+                                        str(round(get_live_price(wlist[index]),2)) + " x "  +
+                                        str(shares[wlist[index]])+'\n' +
+                                        str(round(get_live_price(wlist[index]) * shares[wlist[index]]
+                                        - invested_before[wlist[index]],2)) +
+                                        ' (' +str(round(get_live_price(wlist[index])/
+                                        invested_before[wlist[index]],2))+
+                                        '%)' + "\n" + names[wlist[index]]))
+                    index+=1
+                except:
+                    break
         pbuttons[i][j].after(20000,updateStocks)
-    except:pass
     if visible != 'watchlist' and visible != 'portfolio':print('suspended')
 def updateEquity():
     print('updating equity')
@@ -349,6 +346,8 @@ def graph_page(name):   #EDIT GRAPH HERE
     numField.place(x=750,y=330)
     addWatchlist = Button(graphing,width=42, text="Add to Watchlist",command=lambda:startWatching(name))
     delWatchlist = Button(graphing,width=42, text="Remove from Watchlist",command=lambda:stopWatching(name))
+    addWatchlist.place(x=750,y=360)
+    delWatchlist.place(x=750,y=390)
     graphing.mainloop()
 
 def raise_home():
