@@ -193,13 +193,15 @@ def updateStocks():
                 for j in range(len(buttons[i])):
                     try:
                         ticker = yf.Ticker(wlist[index])
-                        buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) + '\n' +
-                                            str(round(get_live_price(wlist[index])
-                                            - int(ticker.history(period='1d')['Open']),2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/
-                                            int(ticker.history(period='1d')['Open']),2))+
-                                            '%)' + "\n" + names[wlist[index]]))
+                        buttons[i][j] = Button(frame_buttons, bg='white',
+                                               relief=FLAT,
+                                               command=lambda index=index:graph_page(wlist[index]),
+                                               text=(wlist[index]+"\n$"+
+                                                     str(round(get_live_price(wlist[index]),2) +'\n' +
+                                                     str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                                     ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                                     '%)' + "\n" + names[wlist[index]])))
+                        buttons[i][j].grid(row=i, column=j, sticky='news')
                         index+=1
                     except:
                         break
@@ -211,14 +213,16 @@ def updateStocks():
             for i in range(len(pbuttons)):
                 for j in range(len(pbuttons[i])):
                     try:
-                        pbuttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) + " x "  +
-                                            str(shares[wlist[index]])+'\n' +
-                                            str(round(get_live_price(wlist[index]) * shares[wlist[index]]
-                                            - invested_before[wlist[index]],2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/
-                                            invested_before[wlist[index]],2))+
-                                            '%)' + "\n" + names[wlist[index]]))
+                        ticker = yf.Ticker(wlist[index])
+                        pbuttons[i][j] = Button(frame_buttons, bg='white',
+                                               relief=FLAT,
+                                               command=lambda index=index:graph_page(wlist[index]),
+                                               text=(wlist[index]+"\n$"+
+                                                     str(round(get_live_price(wlist[index]),2) +'\n' +
+                                                     str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                                     ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                                     '%)' + "\n" + names[wlist[index]])))
+                        pbuttons[i][j].grid(row=i, column=j, sticky='news')
                         index+=1
                     except:
                         break
@@ -250,7 +254,10 @@ def updateHomeList():
         scroll_y = tkinter.Scrollbar(home, orient="vertical")
         scroll_y.configure(bg='black')
         for set in highest:
-            Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
+            ticker = yf.Ticker(set[0])
+            Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) 
+                                                                                                    +"  "  + str(round(round(get_live_price(set[0]),2) - int(ticker.history(period='1d')['Open']),2))
+                                                                                                    + "\n" + names[set[0]])).pack(side='right',expand=True)
         scroll_y.configure()
         scroll_y.place(relx=0.485, y=330, anchor=CENTER)
     else:
@@ -379,7 +386,9 @@ def raise_home():
     today = tkinter.Text(home, height = 3, width = len(str(inc_num)), bg = 'black', fg = 'grey', relief=FLAT)
     today.configure(font=("Calibri", 30, ""))
     today.insert(tkinter.END, "Today:\n")
-    today.insert(tkinter.END, ' +' + str(inc_num))
+    if (inc_num) >= 0:
+        today.insert(tkinter.END, ' +' + str(inc_num))
+    else:today.insert(tkinter.END, ' ' + str(inc_num))
     today.tag_add("start", "2.0", "3.0")
     today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
     today.place(x=900,y=100)
@@ -402,7 +411,10 @@ def raise_home():
         index = 0
         # Show price of stock, profit in %, how many shares
         for set in highest:
-            Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) +"   "  + str(round(set[1] - invested_before[set[0]],2)) + "\n" + names[set[0]])).pack(side='right',expand=True)
+            ticker = yf.Ticker(set[0])
+            Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) 
+                                                                                                    +"  "  + str(round(round(get_live_price(set[0]),2) - int(ticker.history(period='1d')['Open']),2))
+                                                                                                    + "\n" + names[set[0]])).pack(side='right',expand=True)
         scroll_y.configure()
         scroll_y.place(relx=0.485, y=330, anchor=CENTER)
         updateHomeList()
