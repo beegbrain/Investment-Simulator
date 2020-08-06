@@ -36,13 +36,14 @@ global visible
 global cur_bal_txt1
 datafile = open(os.path.dirname(os.path.abspath(__file__)) + "\data.txt").read().split()
 wlist = eval(datafile[0])#current watchlist
-invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
-shares = eval(datafile[2])
-balance = 0
-buyMoney = float(datafile[3])
-prev_bal  = float(datafile[4])
+plist = eval(datafile[1])
+invested_before = eval(datafile[2])  #The day before? depends... you choose what data to put
+shares = eval(datafile[3])
+balance = 0.0
+buyMoney = float(datafile[4])
+prev_bal  = float(datafile[5])
 stockMoney=0.0
-equity = 0
+equity = 0.0
 totalMoney=buyMoney
 bal_stocks = totalMoney
 prices = dict()
@@ -123,8 +124,8 @@ def buyStock(name):
         prices[name.upper()] = stockPrice
         
     else:
-        wlist.append(name.upper())
-        shares[name.upper()] = numField.get() #stores the # of shares you bought
+        plist.append(name.upper())
+        shares[name.upper()] = int(numField.get()) #stores the # of shares you bought
         invested_before[name.upper()] = get_live_price(name) #stores the price you bought it at
         prices[name.upper()] = get_live_price(name) #stores the live price
         stock = yf.Ticker(name) 
@@ -161,6 +162,7 @@ def sellStock(name): #this function allows the user to sell stocks
         if shares[name] == 0:
             del shares[name]
             del names[name]
+            plist.remove(name)
         invested_before.pop(name.upper(),None)
         prices.pop(name.upper(),None)
         names.pop(name.upper(),None)
@@ -213,15 +215,15 @@ def updateStocks():
     except:pass
     try:
         if visible == 'portfolio':
-            print('successful portfolio',wlist)
+            print('successful portfolio',plist)
             for i in range(len(pbuttons)):
                 for j in range(len(pbuttons[i])):
                     try:
-                        pbuttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                            str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                            '%)' + "\n" + names[wlist[index]]))
+                        pbuttons[i][j].config(text=(plist[index]+"\n$"+
+                                            str(round(get_live_price(plist[index]),2)) +'\n' +
+                                            str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                            ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                            '%)' + "\n" + names[plist[index]]))
                         index+=1
                     except:
                         break
@@ -698,19 +700,19 @@ def raise_portfolio():
                 #filling the slots in
                 pbuttons[i][j] = Button(frame_buttons, bg='white',
                                relief=FLAT,
-                               command=lambda index=index:graph_page(wlist[index]),
-                               text=(wlist[index]+"\n$"+
-                                    str(round(prices[wlist[index]],2)) + " x "  +
-                                    str(shares[wlist[index]])+'\n' +
-                                    str(round(get_live_price(wlist[index])
-                                                  - invested_before[wlist[index]],2)) +
-                                    ' (' +str(round(get_live_price(wlist[index])/
-                                                 invested_before[wlist[index]],2))+
-                                    '%)' + "\n" + names[wlist[index]]))
+                               command=lambda index=index:graph_page(plist[index]),
+                               text=(plist[index]+"\n$"+
+                                    str(round(prices[plist[index]],2)) + " x "  +
+                                    str(shares[plist[index]])+'\n' +
+                                    str(round(get_live_price(plist[index])
+                                                  - invested_before[plist[index]],2)) +
+                                    ' (' +str(round(get_live_price(plist[index])/
+                                                 invested_before[plist[index]],2))+
+                                    '%)' + "\n" + names[plist[index]]))
                 pbuttons[i][j].grid(row=i, column=j, sticky='news')
                 index += 1
             except:
-                #once the index is invalid/wlist is out of items, break loop because all slots are filled
+                #once the index is invalid/plist is out of items, break loop because all slots are filled
                 break
     frame_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
     first5columns_width = sum([pbuttons[0][j].winfo_width() for j in range(0, columns)])# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
@@ -724,7 +726,7 @@ raise_home()
 def write():
     #Writes data into data.txt 
     print('saving data.....')
-    prev_bal = int(datafile[4])
+    prev_bal = int(datafile[5])
     bal = cur_bal_txt1.cget('text')[1:]
     f = open(os.path.dirname(os.path.abspath(__file__)) + "\data.txt", 'r+')#Finding file apth
     f.truncate(0)#Deletes content
