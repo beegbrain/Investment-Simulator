@@ -323,7 +323,7 @@ def grapher(x,y,name):
     a.set_facecolor('black')
     a.set_title ('', fontsize=13, color = "white")
     a.set_ylabel("", fontsize=14)
-    a.set_xlabel("5 Days", fontsize=14)  
+    a.set_xlabel(xlabel(x), fontsize=14)
     a.xaxis.label.set_color('white')
     a.tick_params(axis='x', colors='white')
     a.yaxis.label.set_color('white')
@@ -341,7 +341,8 @@ def grapher(x,y,name):
     title_txt.config(state=DISABLED)
     title_txt.place(x=1280/2,y=150)
     canvas.get_tk_widget().place(x=150,y=150)#Placing the canvas on window
-    canvas.draw()    
+    canvas.draw()
+
 
 def graph_page(name):   #EDIT GRAPH HERE 
     visible = 'graphing'
@@ -731,9 +732,10 @@ def write():
     print('saving data.....')
     prev_bal = int(datafile[5])
     bal = cur_bal_txt1.cget('text')[1:]
-    f = open(os.path.dirname(os.path.abspath(__file__)) + "\data.txt", 'r+')#Finding file apth
+    f = open(os.path.dirname(os.path.abspath(__file__)) + "\data.txt", 'r+')#Fi     nding file apth
     f.truncate(0)#Deletes content
     f.write(str(wlist).replace(' ','')+'\n')
+    f.write(str(plist).replace(' ','')+'\n')
     invested_before = {}
     for index in wlist:
         invested_before[index] = float(get_live_price(index)) * float(shares[index])
