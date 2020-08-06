@@ -115,9 +115,9 @@ def buyStock(name):
     elif int(numField.get()) != float(numField.get()):
         mb.showerror("Error", "You cannot buy a noninteger amount of stocks")
         return()
-    elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
-        mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
-        return()
+    #elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
+        #mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        #return()
     buyMoney=transaction
     if str(name.upper()) in invested_before.keys():#updates the amount of shares and the price of it
         shares[name.upper()] += float(numField.get())
@@ -151,9 +151,9 @@ def sellStock(name): #this function allows the user to sell stocks
     elif int(numField.get()) != float(numField.get()):
         mb.showerror("Error", "You cannot sell a noninteger amount of stocks")
         return()
-    elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
-        mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
-        return()
+    #elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
+        #mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        #return()
     stockPrice = get_live_price(name)#get the live price of a stock
     prices[name] = stockPrice #update stock price
     buyMoney = buyMoney+stockPrice #updates how much spending money you have
@@ -436,7 +436,7 @@ def raise_home():
         watchlist_txt.insert(tkinter.END, "Priority Watchlist:")
         watchlist_txt.place(relx=0.5, y=250, anchor=CENTER)
         watchlist_txt.config(state=DISABLED)
-        empty = tkinter.Text(home, height = 1, width = len("Search up a stock and click add to watchlist"), bg = 'black', fg = 'white', relief=FLAT)
+        empty = tkinter.Text(home, height = 10, width = len("Search up a stock and click add to watchlist"), bg = 'black', fg = 'white', relief=FLAT)
         empty.configure(font=("Calibri", 30, ""))
         empty.insert(tkinter.END, "Search up a stock and click add to watchlist")
         empty.config(state=DISABLED)
@@ -452,7 +452,7 @@ def raise_home():
         scroll_y.configure(bg='black')
         if len(wlist) > 0:
             empty.configure(fg = 'black')
-            empty.place(relx=0.5, y=300, anchor=CENTER)
+            empty.place(relx=0.5, y=520, anchor=CENTER)
             index = 0
             # Show price of stock, profit in %, how many shares
             for set in highest:
@@ -468,7 +468,7 @@ def raise_home():
             more.place(relx=0.485, y=285, anchor = CENTER)
         else:
             #If watchlist is empty, display text
-            empty.place(relx=0.5, y=300, anchor=CENTER)
+            empty.place(relx=0.5, y=520, anchor=CENTER)
             
             
         updateHomeList()
