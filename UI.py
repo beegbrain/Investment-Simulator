@@ -419,9 +419,12 @@ def raise_home():
     today.insert(tkinter.END, "Today:\n")
     if (inc_num) >= 0:
         today.insert(tkinter.END, ' +' + str(inc_num))
-    else:today.insert(tkinter.END, ' ' + str(inc_num))
-    today.tag_add("start", "2.0", "3.0")
-    today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
+        today.tag_add("start", "2.0", "3.0")
+        today.tag_config("start", background="#32CD32", foreground="white",font=("Calibri", 20, "bold"))
+    else:
+        today.insert(tkinter.END, ' ' + str(inc_num))
+        today.tag_add("start", "2.0", "3.0")
+        today.tag_config("start", background="#FF0000", foreground="white",font=("Calibri", 20, "bold"))
     today.place(x=900,y=100)
     today.config(state=DISABLED)
     
