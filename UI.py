@@ -213,7 +213,7 @@ def updateStocks():
     except:pass
     try:
         if visible == 'portfolio':
-            print('successful')
+            print('successful portfolio',wlist)
             for i in range(len(pbuttons)):
                 for j in range(len(pbuttons[i])):
                     try:
@@ -436,7 +436,10 @@ def raise_home():
         empty.config(state=DISABLED)
         k = Counter(shares) 
         global highest
-        highest = k.most_common(3) # Finding 3 highest values 
+        try:
+            highest = k.most_common(3) # Finding 3 highest values 
+        except:
+            highest = k.most_common()
         x_coor=0   
         global scroll_y         
         scroll_y = tkinter.Scrollbar(home, orient="vertical")
@@ -544,7 +547,7 @@ def raise_market():
         ticker.info
         daypricelist=list()
         for f, b in zip(ticker.history(period="1d",interval="5m")["Open"], ticker.history(period="1d",interval="5m")["Close"]):
-            daypricelist.append( 100 * (b - f) / f)
+            daypricelist.append( 100 * (int(b) - int(f)) / int(f))
         dayprice= np.array(daypricelist)
         daytime=list(range(0,len(daypricelist)))
         return (daytime,dayprice)
