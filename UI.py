@@ -16,6 +16,7 @@ from yahoo_fin.stock_info import *
 import os
 from collections import OrderedDict
 import time
+import datetime
 
 root = tkinter.Tk()
 root.title("Investment Simulator")
@@ -38,8 +39,8 @@ wlist = eval(datafile[0])#current watchlist
 invested_before = eval(datafile[1])  #The day before? depends... you choose what data to put
 shares = eval(datafile[2])
 balance = 0
-buyMoney = int(datafile[3])
-prev_bal  = int(datafile[4])
+buyMoney = float(datafile[3])
+prev_bal  = float(datafile[4])
 stockMoney=0.0
 equity = 0
 totalMoney=buyMoney
@@ -130,7 +131,7 @@ def buyStock(name):
         names[name.upper()] = stock.info['shortName'] #stores the actual company name
     stockMoney += stockPrice*float(numField.get()) #updates how much money in stocks you have
     balance = buyMoney #updates the balance in the UI
-    cur_bal_txt1.configure(text="$"+str(balance))
+    cur_bal_txt1.configure(text="$"+str(round(balance,2)))
     return()
 def sellStock(name): #this function allows the user to sell stocks
     global buyMoney
@@ -167,7 +168,7 @@ def sellStock(name): #this function allows the user to sell stocks
         shares[name]-=1
     stockMoney-=stockPrice
     balance = buyMoney #updates the balance in the UI
-    cur_bal_txt1.configure(text="$"+str(balance))
+    cur_bal_txt1.configure(text="$"+str(round(balance,2)))
     return()
 def updateMoney():
     print('updating money')
@@ -648,6 +649,7 @@ def updatePortfolio():
         equity = currentPrice
 
 def raise_portfolio():
+    global wlist
     wlist = list(OrderedDict.fromkeys(wlist))
     global visible
     visible = 'portfolio'
