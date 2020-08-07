@@ -208,7 +208,8 @@ def updatewStocks():
                                         
                     index+=1
                 except:pass
-    buttons[i][j].after(20000,updatewStocks)#Updates it every 20,000 ms
+    buttons.after(20000,updatewStocks)#Updates it every 20,000 ms
+    if visible != 'watchlist':print('suspended')#If not on the right page, stop updates 
 def updatepStocks():
     print('updating stocks')
     global pbuttons
@@ -216,7 +217,7 @@ def updatepStocks():
     global names
     index = 0
     if visible == 'portfolio':
-        print('successful portfolio',plist)
+        print('successful portfolio')
         for i in range(len(pbuttons)):
             for j in range(len(pbuttons[i])):
                 try:
@@ -228,8 +229,8 @@ def updatepStocks():
                                         '%)' + "\n" + names[plist[index]]))
                     index+=1
                 except:pass
-    pbuttons[i][j].after(20000,updatepStocks)
-    if visible != 'watchlist' and visible != 'portfolio':print('suspended')#If not on the right page, stop updates
+    pbuttons.after(20000,updatepStocks)
+    if visible != 'portfolio':print('suspended')#If not on the right page, stop updates
 def updateEquity():
     print('updating equity')
     global equity
@@ -719,7 +720,7 @@ def raise_portfolio():
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
-    updatepStocks
+    updatepStocks()
 raise_portfolio()
 raise_watchlist()
 raise_home()
