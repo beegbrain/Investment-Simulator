@@ -199,34 +199,29 @@ def updateStocks():
             print('successful ')
             for i in range(len(buttons)):
                 for j in range(len(buttons[i])):
-                    try:
-                        #Formatting the button text
-                        ticker = yf.Ticker(wlist[index])
-                        buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                            str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                            str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                            '%)' + "\n" + names[wlist[index]]))
-                                            
-                        index+=1
-                    except:
-                        break
+                    #Formatting the button text
+                    ticker = yf.Ticker(wlist[index])
+                    buttons[i][j].config(text=(wlist[index]+"\n$"+
+                                        str(round(get_live_price(wlist[index]),2)) +'\n' +
+                                        str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[wlist[index]]))
+                                        
+                    index+=1
         buttons[i][j].after(20000,updateStocks)#Updates it every 20,000 ms
-    except:pass
+    except:pass 
     try:
         if visible == 'portfolio':
             print('successful portfolio',plist)
             for i in range(len(pbuttons)):
                 for j in range(len(pbuttons[i])):
-                    try:
-                        pbuttons[i][j].config(text=(plist[index]+"\n$"+
-                                            str(round(get_live_price(plist[index]),2)) +'\n' +
-                                            str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                            ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                            '%)' + "\n" + names[plist[index]]))
-                        index+=1
-                    except:
-                        break
+                    ticker = yf.Ticker(wlist[index])
+                    pbuttons[i][j].config(text=(plist[index]+"\n$"+
+                                        str(round(get_live_price(plist[index]),2)) +'\n' +
+                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[plist[index]]))
+                    index+=1
         pbuttons[i][j].after(20000,updateStocks)
     except:pass
     if visible != 'watchlist' and visible != 'portfolio':print('suspended')#If not on the right page, stop updates
@@ -697,24 +692,18 @@ def raise_portfolio():
     pbuttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
     for i in range(0, rows):
         for j in range(0, columns):
+            ticker = yf.Ticker(wlist[index])
             try:
-                    #name, ticker
-                    #share price x amount of shares
-                    #profit amount profit %
+                #name, ticker
+                #share price x amount of shares
+                #profit amount profit %
                 #filling the slots in
-                pbuttons[i][j] = Button(frame_buttons, bg='white',
-                               relief=FLAT,
-                               command=lambda index=index:graph_page(plist[index]),
-                               text=(plist[index]+"\n$"+
-                                    str(round(prices[plist[index]],2)) + " x "  +
-                                    str(shares[plist[index]])+'\n' +
-                                    str(round(get_live_price(plist[index])
-                                                  - invested_before[plist[index]],2)) +
-                                    ' (' +str(round(get_live_price(plist[index])/
-                                                 invested_before[plist[index]],2))+
+                pbuttons[i][j].config(text=(plist[index]+"\n$"+
+                                    str(round(get_live_price(plist[index]),2)) +'\n' +
+                                    str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                    ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
                                     '%)' + "\n" + names[plist[index]]))
-                pbuttons[i][j].grid(row=i, column=j, sticky='news')
-                index += 1
+                index+=1
             except:
                 #once the index is invalid/plist is out of items, break loop because all slots are filled
                 break
