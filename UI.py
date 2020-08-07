@@ -109,10 +109,8 @@ def buyStock(name):
     global totalMoney
     global numField
     global balance
-    stockPrice = get_live_price(name)#get the stock price of the wanted stock
-    transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
-    if transaction <0:
-        mb.showerror("Error", "you do not have enough money for this purchase")
+    if not numField.get().isdigit():
+        mb.showerror("Error", "Please enter an positive integer value of stocks")
         return()
     elif float(numField.get())<=0:
         mb.showerror("Error", "You cannot purchase a nonpositive amount of stocks")
@@ -122,6 +120,11 @@ def buyStock(name):
         return()
     elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
         mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        return()
+    stockPrice = get_live_price(name)#get the stock price of the wanted stock
+    transaction = buyMoney - stockPrice*int(numField.get())#makes the transaction
+    if transaction <0:
+        mb.showerror("Error", "you do not have enough money for this purchase")
         return()
     buyMoney=transaction
     if str(name.upper()) in invested_before.keys():#updates the amount of shares and the price of it
@@ -158,6 +161,9 @@ def sellStock(name): #this function allows the user to sell stocks
         return()
     elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
         mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        return()
+    elif not numField.get().isdigit():
+        mb.showerror("Error", "Please enter an positive integer value of stocks")
         return()
     stockPrice = get_live_price(name)#get the live price of a stock
     prices[name] = stockPrice #update stock price
@@ -637,10 +643,12 @@ def raise_market():
         canvas = FigureCanvasTkAgg(fig, master=market)
         canvas.get_tk_widget().place(x=100,y=100)
         canvas.draw()
+
     Button(market, text='Past Day',fg='black', bg='grey', relief=FLAT, command=lambda:daygraph()).place(x=750,y=150)
     Button(market, text='Past 5 Days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=810,y=150)
     Button(market, text='Past Year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=885,y=150)  
-    daygraph()
+    
+
     legend1 = tkinter.Text(market, height=1, width=7, bg = '#E5CFAD', fg = 'black', relief=FLAT)
     legend1.configure(font=("Calibri", 15, ""))
     legend1.insert(tkinter.END, "NASDAQ")
@@ -658,7 +666,6 @@ def raise_market():
     legend3.insert(tkinter.END, "S & P 500")
     legend3.place(x=750,y=360)
     legend3.config(state=DISABLED)
-    
 
 
 def updatePortfolio():
@@ -732,9 +739,7 @@ def raise_portfolio():
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
-    updatepStocks()
- 
-raise_market()
+    #updatepStocks()
 raise_home()
 def write():
     #Writes data into data.txt 
