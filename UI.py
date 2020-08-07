@@ -53,7 +53,12 @@ for index in wlist:
     data = response.text.split(':')
     names[index] = data[-1][1:-3]
     equity += get_live_price(index) * shares[index]
-
+for index in plist:
+    response = requests.get("https://ticker-2e1ica8b9.now.sh/keyword/"+index)
+    data = response.text.split(':')
+    names[index] = data[-1][1:-3]
+    equity += get_live_price(index) * shares[index]
+print (names)
 
 
 
