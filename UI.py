@@ -193,6 +193,8 @@ def updatewStocks():
     global wlist
     global names
     index = 0
+    i=0
+    j=0
     if visible == 'watchlist':
         print('successful ')
         for i in range(len(buttons)):
@@ -208,7 +210,7 @@ def updatewStocks():
                                         
                     index+=1
                 except:pass
-    buttons.after(20000,updatewStocks)#Updates it every 20,000 ms
+    buttons[i][j].after(20000,updatewStocks)#Updates it every 20,000 ms
     if visible != 'watchlist':print('suspended')#If not on the right page, stop updates 
 def updatepStocks():
     print('updating stocks')
@@ -216,20 +218,26 @@ def updatepStocks():
     global plist
     global names
     index = 0
+    i=0
+    j=0
     if visible == 'portfolio':
-        print('successful portfolio')
+        print('successful')
         for i in range(len(pbuttons)):
             for j in range(len(pbuttons[i])):
-                try:
+                if index < len(plist):
                     ticker = yf.Ticker(plist[index])
+                    print(plist[index]+"\n$"+
+                                        str(round(get_live_price(plist[index]),2)) +'\n' +
+                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[plist[index]])
                     pbuttons[i][j].config(text=(plist[index]+"\n$"+
-                                        str(round(get_live_price([index]),2)) +'\n' +
+                                        str(round(get_live_price(plist[index]),2)) +'\n' +
                                         str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
                                         ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
                                         '%)' + "\n" + names[plist[index]]))
                     index+=1
-                except:pass
-    pbuttons.after(20000,updatepStocks)
+    pbuttons[i][j].after(20000,updatepStocks)
     if visible != 'portfolio':print('suspended')#If not on the right page, stop updates
 def updateEquity():
     print('updating equity')
@@ -689,40 +697,38 @@ def raise_portfolio():
     vsb = Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)# Link a scrollbar to the canvas
     vsb.grid(row=0, column=1, sticky='ns')#covers from top to bottom (the scroll bar)
     canvas.configure(yscrollcommand=vsb.set)#link scrollbar to canvas
-    frame_buttons = Frame(canvas, bg="white")# Create a frame to contain the buttons
-    canvas.create_window((0, 0), window=frame_buttons, anchor='nw')
+    pframe_buttons = Frame(canvas, bg="white")# Create a frame to contain the buttons
+    canvas.create_window((0, 0), window=pframe_buttons, anchor='nw')
     rows = 10# Add buttons to the frame
     columns = 10
     index=0
+    global pbuttons
     pbuttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
     for i in range(0, rows):
         for j in range(0, columns):
-            
-            try:
+            if index < len(plist):
                 ticker = yf.Ticker(plist[index])
                 #name, ticker
                 #share price x amount of shares
                 #profit amount profit %
-                #filling the slots in
-                pbuttons[i][j].config(text=(plist[index]+"\n$"+
-                                    str(round(get_live_price(plist[index]),2)) +'\n' +
-                                    str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                    ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                    '%)' + "\n" + names[plist[index]]))
+                pbuttons[i][j] = Button(pframe_buttons, bg='white',
+                                        relief=FLAT,
+                                        command=lambda index=index:graph_page(plist[index]),
+                                        text=(plist[index]+"\n$"+
+                                        str(round(get_live_price(plist[index]),2)) + 'x' + str(shares[plist[index]]) + '\n' +
+                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[plist[index]]))
+                pbuttons[i][j].grid(row=i, column=j, sticky='news')                    
                 index+=1
-            except:
-                #once the index is invalid/plist is out of items, break loop because all slots are filled
-                break
-    frame_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
+    pframe_buttons.update_idletasks()# Update buttons frames idle tasks to let tkinter calculate buttons sizes
     first5columns_width = sum([pbuttons[0][j].winfo_width() for j in range(0, columns)])# Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
     first5rows_height = sum([pbuttons[i][0].winfo_height() for i in range(0, rows)])
     frame_canvas.config(width=first5columns_width + vsb.winfo_width(),
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
-    updatepStocks()
-raise_portfolio()
-raise_watchlist()
+    #updatepStocks()
 raise_home()
 def write():
     #Writes data into data.txt 
