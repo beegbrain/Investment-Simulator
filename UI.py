@@ -58,7 +58,7 @@ for index in plist:
     data = response.text.split(':')
     names[index] = data[-1][1:-3]
     equity += get_live_price(index) * shares[index]
-print (names)
+
 
 
 
@@ -120,9 +120,9 @@ def buyStock(name):
     elif int(numField.get()) != float(numField.get()):
         mb.showerror("Error", "You cannot buy a noninteger amount of stocks")
         return()
-    #elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
-        #mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
-        #return()
+    elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
+        mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        return()
     buyMoney=transaction
     if str(name.upper()) in invested_before.keys():#updates the amount of shares and the price of it
         shares[name.upper()] += float(numField.get())
@@ -156,9 +156,9 @@ def sellStock(name): #this function allows the user to sell stocks
     elif int(numField.get()) != float(numField.get()):
         mb.showerror("Error", "You cannot sell a noninteger amount of stocks")
         return()
-    #elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
-        #mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
-        #return()
+    elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
+        mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
+        return()
     stockPrice = get_live_price(name)#get the live price of a stock
     prices[name] = stockPrice #update stock price
     buyMoney = buyMoney+stockPrice #updates how much spending money you have
