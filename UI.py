@@ -194,36 +194,32 @@ def updateStocks():
     global wlist
     global names
     index = 0
-    try:
-        if visible == 'watchlist':
-            print('successful ')
-            for i in range(len(buttons)):
-                for j in range(len(buttons[i])):
-                    #Formatting the button text
-                    ticker = yf.Ticker(wlist[index])
-                    buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                        str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                        str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                        ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                        '%)' + "\n" + names[wlist[index]]))
-                                        
-                    index+=1
-        buttons[i][j].after(20000,updateStocks)#Updates it every 20,000 ms
-    except:pass 
-    try:
-        if visible == 'portfolio':
-            print('successful portfolio',plist)
-            for i in range(len(pbuttons)):
-                for j in range(len(pbuttons[i])):
-                    ticker = yf.Ticker(wlist[index])
-                    pbuttons[i][j].config(text=(plist[index]+"\n$"+
-                                        str(round(get_live_price(plist[index]),2)) +'\n' +
-                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                        '%)' + "\n" + names[plist[index]]))
-                    index+=1
-        pbuttons[i][j].after(20000,updateStocks)
-    except:pass
+    if visible == 'watchlist':
+        print('successful ')
+        for i in range(len(buttons)):
+            for j in range(len(buttons[i])):
+                #Formatting the button text
+                ticker = yf.Ticker(wlist[index])
+                buttons[i][j].config(text=(wlist[index]+"\n$"+
+                                    str(round(get_live_price(wlist[index]),2)) +'\n' +
+                                    str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                    ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                    '%)' + "\n" + names[wlist[index]]))
+                                    
+                index+=1
+    buttons[i][j].after(20000,updateStocks)#Updates it every 20,000 ms
+    if visible == 'portfolio':
+        print('successful portfolio',plist)
+        for i in range(len(pbuttons)):
+            for j in range(len(pbuttons[i])):
+                ticker = yf.Ticker(plist[index])
+                pbuttons[i][j].config(text=(plist[index]+"\n$"+
+                                    str(round(get_live_price([index]),2)) +'\n' +
+                                    str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                    ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                    '%)' + "\n" + names[plist[index]]))
+                index+=1
+    pbuttons[i][j].after(20000,updateStocks)
     if visible != 'watchlist' and visible != 'portfolio':print('suspended')#If not on the right page, stop updates
 def updateEquity():
     print('updating equity')
@@ -274,11 +270,6 @@ def stopWatching(stock):
         wlist.remove(stock)
         names.pop(stock.upper())
     return()
-
-
-
-
-
 for frame in (watchlist, market, portfolio, graphing, home):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
@@ -302,11 +293,6 @@ for frame in (watchlist, market, portfolio, graphing, home):
     Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_home()).place(x=50,y=20)
     Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_market()).place(x=180,y=20)    
     Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_portfolio()).place(x=330,y=20)
-    
-    
-    
-    
-    
   
 def xlabel(x):
     if x==daytime:
@@ -702,7 +688,7 @@ def raise_portfolio():
     pbuttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
     for i in range(0, rows):
         for j in range(0, columns):
-            ticker = yf.Ticker(wlist[index])
+            ticker = yf.Ticker(plist[index])
             try:
                 #name, ticker
                 #share price x amount of shares
