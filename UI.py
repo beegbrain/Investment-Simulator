@@ -637,12 +637,10 @@ def raise_market():
         canvas = FigureCanvasTkAgg(fig, master=market)
         canvas.get_tk_widget().place(x=100,y=100)
         canvas.draw()
-
     Button(market, text='Past Day',fg='black', bg='grey', relief=FLAT, command=lambda:daygraph()).place(x=750,y=150)
     Button(market, text='Past 5 Days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=810,y=150)
     Button(market, text='Past Year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=885,y=150)  
-    
-
+    daygraph()
     legend1 = tkinter.Text(market, height=1, width=7, bg = '#E5CFAD', fg = 'black', relief=FLAT)
     legend1.configure(font=("Calibri", 15, ""))
     legend1.insert(tkinter.END, "NASDAQ")
@@ -660,6 +658,7 @@ def raise_market():
     legend3.insert(tkinter.END, "S & P 500")
     legend3.place(x=750,y=360)
     legend3.config(state=DISABLED)
+    
 
 
 def updatePortfolio():
@@ -733,7 +732,9 @@ def raise_portfolio():
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
-    #updatepStocks()
+    updatepStocks()
+ 
+raise_market()
 raise_home()
 def write():
     #Writes data into data.txt 
