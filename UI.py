@@ -274,6 +274,11 @@ def stopWatching(stock):
         wlist.remove(stock)
         names.pop(stock.upper())
     return()
+
+
+
+
+
 for frame in (watchlist, market, portfolio, graphing, home):
     #Set frame to fill page
     frame.configure(bg="black") #Background Color
@@ -297,6 +302,11 @@ for frame in (watchlist, market, portfolio, graphing, home):
     Button(frame, text='Home',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_home()).place(x=50,y=20)
     Button(frame, text='Market',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_market()).place(x=180,y=20)    
     Button(frame, text='Portfolio',font=("Calibri", 25, ""),fg='black', bg='grey', relief=FLAT, command=lambda:raise_portfolio()).place(x=330,y=20)
+    
+    
+    
+    
+    
   
 def xlabel(x):
     if x==daytime:
