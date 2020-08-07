@@ -187,10 +187,9 @@ def updateMoney():
         bal_stocks_txt1.config(text="$"+str(round(bal_stocks,2)))
     print('successful')
     bal_stocks_txt1.after(20000,updateMoney)
-def updateStocks():
+def updatewStocks():
     print('updating stocks')
     global buttons
-    global pbuttons
     global wlist
     global names
     index = 0
@@ -199,27 +198,37 @@ def updateStocks():
         for i in range(len(buttons)):
             for j in range(len(buttons[i])):
                 #Formatting the button text
-                ticker = yf.Ticker(wlist[index])
-                buttons[i][j].config(text=(wlist[index]+"\n$"+
-                                    str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                    str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                    ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                    '%)' + "\n" + names[wlist[index]]))
-                                    
-                index+=1
-    buttons[i][j].after(20000,updateStocks)#Updates it every 20,000 ms
+                try:
+                    ticker = yf.Ticker(wlist[index])
+                    buttons[i][j].config(text=(wlist[index]+"\n$"+
+                                        str(round(get_live_price(wlist[index]),2)) +'\n' +
+                                        str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[wlist[index]]))
+                                        
+                    index+=1
+                except:pass
+    buttons[i][j].after(20000,updatewStocks)#Updates it every 20,000 ms
+def updatepStocks():
+    print('updating stocks')
+    global pbuttons
+    global plist
+    global names
+    index = 0
     if visible == 'portfolio':
         print('successful portfolio',plist)
         for i in range(len(pbuttons)):
             for j in range(len(pbuttons[i])):
-                ticker = yf.Ticker(plist[index])
-                pbuttons[i][j].config(text=(plist[index]+"\n$"+
-                                    str(round(get_live_price([index]),2)) +'\n' +
-                                    str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                    ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
-                                    '%)' + "\n" + names[plist[index]]))
-                index+=1
-    pbuttons[i][j].after(20000,updateStocks)
+                try:
+                    ticker = yf.Ticker(plist[index])
+                    pbuttons[i][j].config(text=(plist[index]+"\n$"+
+                                        str(round(get_live_price([index]),2)) +'\n' +
+                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        '%)' + "\n" + names[plist[index]]))
+                    index+=1
+                except:pass
+    pbuttons[i][j].after(20000,updatepStocks)
     if visible != 'watchlist' and visible != 'portfolio':print('suspended')#If not on the right page, stop updates
 def updateEquity():
     print('updating equity')
@@ -522,7 +531,7 @@ def raise_watchlist():
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=150)#plot
-    updateStocks()
+    updatewStocks()
    
 def raise_market():
     global visible
@@ -684,12 +693,12 @@ def raise_portfolio():
     rows = 10# Add buttons to the frame
     columns = 10
     index=0
-    global pbuttons
     pbuttons = [[Button() for j in range(columns)] for i in range(rows)]#creating the empty slots
     for i in range(0, rows):
         for j in range(0, columns):
-            ticker = yf.Ticker(plist[index])
+            
             try:
+                ticker = yf.Ticker(plist[index])
                 #name, ticker
                 #share price x amount of shares
                 #profit amount profit %
@@ -710,7 +719,9 @@ def raise_portfolio():
                         height=first5rows_height)
     canvas.config(scrollregion=canvas.bbox("all"))# Set the canvas scrolling region
     frame_canvas.place(x=100,y=300)#plot
-    updateStocks()
+    updatepStocks
+raise_portfolio()
+raise_watchlist()
 raise_home()
 def write():
     #Writes data into data.txt 
