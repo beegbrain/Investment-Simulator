@@ -150,6 +150,9 @@ def sellStock(name): #this function allows the user to sell stocks
     if(name.upper() not in shares.keys()): # if you don't have enough stocks to sell show a popup error
         mb.showerror("Error", "you do not own any of this stock")
         return()
+    elif not numField.get().isdigit():
+        mb.showerror("Error", "Please enter an positive integer value of stocks")
+        return()
     elif(int(numField.get())>shares[name]):
         mb.showerror("Error", "you do not have enough stocks for this transaction")
         return()
@@ -161,9 +164,6 @@ def sellStock(name): #this function allows the user to sell stocks
         return()
     elif datetime.datetime.now() > datetime.datetime.now().replace(hour=13,minute=30,second=0,microsecond=0):
         mb.showerror("Error", "The stock market has closed for today! You cannot trade now")
-        return()
-    elif not numField.get().isdigit():
-        mb.showerror("Error", "Please enter an positive integer value of stocks")
         return()
     stockPrice = get_live_price(name)#get the live price of a stock
     prices[name] = stockPrice #update stock price
