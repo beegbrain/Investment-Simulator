@@ -209,8 +209,8 @@ def updatewStocks():
                     ticker = yf.Ticker(wlist[index])
                     buttons[i][j].config(text=(wlist[index]+"\n$"+
                                         str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                        str(round(get_live_price(wlist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
-                                        ' (' +str(round(get_live_price(wlist[index])/int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2))+
+                                        str(round(get_live_price(wlist[index]) - int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2)) +
+                                        ' (' +str(round(get_live_price(wlist[index])/int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2))+
                                         '%)' + "\n" + names[wlist[index]]))
                                         
                     index+=1
@@ -233,15 +233,16 @@ def updatepStocks():
                     ticker = yf.Ticker(plist[index])
                     print(plist[index]+"\n$"+
                                         str(round(get_live_price(plist[index]),2)) +'\n' +
-                                        str(round(get_live_price(plist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
-                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        str(round(get_live_price(plist[index]) - int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2))+
                                         '%)' + "\n" + names[plist[index]])
                     pbuttons[i][j].config(text=(plist[index]+"\n$"+
                                         str(round(get_live_price(plist[index]),2)) +'\n' +
-                                        str(round(get_live_price(plist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
-                                        ' (' +str(round(get_live_price(plist[index])/int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2))+
+                                        str(round(get_live_price(plist[index]) - int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2))+
                                         '%)' + "\n" + names[plist[index]]))
                     index+=1
+                    
     pbuttons[i][j].after(20000,updatepStocks)
     if visible != 'portfolio':print('suspended')#If not on the right page, stop updates
 def updateEquity():
@@ -272,7 +273,7 @@ def updateHomeList():
             for set in highest:
                 ticker = yf.Ticker(set[0])
                 Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) 
-                                                                                                        +"  "  + str(round(round(get_live_price(set[0]),2) - int(ticker.history(period='1d')['Open']),2))
+                                                                                                        +"  "  + str(round(round(get_live_price(set[0]),2) - int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2))
                                                                                                         + "\n" + names[set[0]])).pack(side='right',expand=True)
             scroll_y.configure()
             scroll_y.place(relx=0.485, y=330, anchor=CENTER)
@@ -344,8 +345,8 @@ def grapher(x,y,name):
     a.tick_params(axis='y', colors='white')
     title = (name + "(" + yf.Ticker(name.upper()).info['longName'] + ")\n"
         + 'Current Price: $' + str(round(get_live_price(name.upper()),2))
-        + '\nOpen: $' + str(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]))
-    canvas = FigureCanvasTkAgg(fig, master=graphing)#Putting the plot onto a canvas
+        + '\nOpen: $' + str(int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1]))))
+    canvas = FigureCanvasTkAgg(fig, master=graphing)#Putting the p  lot onto a canvas
     title_txt = Text(graphing, height = 4, width = 56, bg = 'black', fg = 'white', relief=FLAT, font=("Serif", 13, ""))
     title_txt.tag_configure("center", justify='center')
     title_txt.insert("1.0", title)
@@ -473,7 +474,7 @@ def raise_home():
             for set in highest:
                 ticker = yf.Ticker(set[0])
                 Button(scroll_y, bg="white", relief=FLAT, command=lambda set=set:graph_page(set[0]),text = (set[0]+"\n$"+str(round(get_live_price(set[0]),2)) 
-                                                                                                        +"  "  + str(round(round(get_live_price(set[0]),2) - int(ticker.history(period='1d')['Open']),2))
+                                                                                                        +"  "  + str(round(round(get_live_price(set[0]),2) - int(eval(str(ticker.history(period='1d')['Open']).split('\n')[1].split()[1])),2))
                                                                                                         + "\n" + names[set[0]])).pack(side='right',expand=True)
             scroll_y.configure()
             scroll_y.place(relx=0.485, y=330, anchor=CENTER)
