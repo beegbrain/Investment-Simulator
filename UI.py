@@ -209,8 +209,8 @@ def updatewStocks():
                     ticker = yf.Ticker(wlist[index])
                     buttons[i][j].config(text=(wlist[index]+"\n$"+
                                         str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                        str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                        ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        str(round(get_live_price(wlist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
+                                        ' (' +str(round(get_live_price(wlist[index])/int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2))+
                                         '%)' + "\n" + names[wlist[index]]))
                                         
                     index+=1
@@ -233,13 +233,13 @@ def updatepStocks():
                     ticker = yf.Ticker(plist[index])
                     print(plist[index]+"\n$"+
                                         str(round(get_live_price(plist[index]),2)) +'\n' +
-                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
+                                        str(round(get_live_price(plist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
                                         ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
                                         '%)' + "\n" + names[plist[index]])
                     pbuttons[i][j].config(text=(plist[index]+"\n$"+
                                         str(round(get_live_price(plist[index]),2)) +'\n' +
-                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        str(round(get_live_price(plist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2))+
                                         '%)' + "\n" + names[plist[index]]))
                     index+=1
     pbuttons[i][j].after(20000,updatepStocks)
@@ -344,7 +344,7 @@ def grapher(x,y,name):
     a.tick_params(axis='y', colors='white')
     title = (name + "(" + yf.Ticker(name.upper()).info['longName'] + ")\n"
         + 'Current Price: $' + str(round(get_live_price(name.upper()),2))
-        + '\nOpen: $' + str(round(int(ticker.history(period='1d')['Open']),2)))
+        + '\nOpen: $' + str(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]))
     canvas = FigureCanvasTkAgg(fig, master=graphing)#Putting the plot onto a canvas
     title_txt = Text(graphing, height = 4, width = 56, bg = 'black', fg = 'white', relief=FLAT, font=("Serif", 13, ""))
     title_txt.tag_configure("center", justify='center')
@@ -391,7 +391,9 @@ def graph_page(name):   #EDIT GRAPH HERE
     Button(graphing, text='Past day',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(daytime,dayprice,name)).place(x=150,y=120)
     Button(graphing, text='Past 5 days',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(weektime,weekprice,name)).place(x=210,y=120) 
     Button(graphing, text='Past year',fg='black', bg='grey', relief=FLAT, command=lambda:grapher(yeartime,yearprice,name)).place(x=285,y=120) 
+    
     grapher(daytime,dayprice,name)#default graph
+    
     buyButton= Button(graphing, width=21,text="BUY",command=lambda:buyStock(name))
     buyButton.place(x=750,y=300)
     sellButton=Button(graphing, width=21,text="SELL",command=lambda:sellStock(name))
@@ -402,7 +404,6 @@ def graph_page(name):   #EDIT GRAPH HERE
     if name in wlist:
         delWatchlist.place(x = 750, y=250)
     else:addWatchlist.place(x = 750, y=250)
-    graphing.mainloop()
 
 def raise_home():
     global visible
@@ -529,8 +530,8 @@ def raise_watchlist():
                                        command=lambda index=index:graph_page(wlist[index]),
                                        text=(wlist[index]+"\n$"+
                                             str(round(get_live_price(wlist[index]),2)) +'\n' +
-                                            str(round(get_live_price(wlist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                            ' (' +str(round(get_live_price(wlist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                            str(round(get_live_price(wlist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
+                                            ' (' +str(round(get_live_price(wlist[index])/int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2))+
                                             '%)' + "\n" + names[wlist[index]]))
                 buttons[i][j].grid(row=i, column=j, sticky='news')
                 index += 1
@@ -720,8 +721,8 @@ def raise_portfolio():
                                         command=lambda index=index:graph_page(plist[index]),
                                         text=(plist[index]+"\n$"+
                                         str(round(get_live_price(plist[index]),2)) + 'x' + str(shares[plist[index]]) + '\n' +
-                                        str(round(get_live_price(plist[index]) - int(ticker.history(period='1d')['Open']),2)) +
-                                        ' (' +str(round(get_live_price(plist[index])/int(ticker.history(period='1d')['Open']),2))+
+                                        str(round(get_live_price(plist[index]) - int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2)) +
+                                        ' (' +str(round(get_live_price(plist[index])/int(((str(ticker.history(period='1d')['Open']).split('\n'))[1].split())[1]),2))+
                                         '%)' + "\n" + names[plist[index]]))
                 pbuttons[i][j].grid(row=i, column=j, sticky='news')                    
                 index+=1
