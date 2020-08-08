@@ -643,7 +643,7 @@ def raise_market():
     Button(market, text='Past 5 Days',fg='black', bg='grey', relief=FLAT, command=lambda:weekgraph()).place(x=810,y=150)
     Button(market, text='Past Year',fg='black', bg='grey', relief=FLAT, command=lambda:yeargraph()).place(x=885,y=150)  
     
-    legend1 = tkinter.Text(market, height=1, width=7, bg = '#E5CFAD', fg = 'black', relief=FLAT)
+    legend1 = tkinter.Text(market, height=1, width=8, bg = '#E5CFAD', fg = 'black', relief=FLAT)
     legend1.configure(font=("Calibri", 15, ""))
     legend1.insert(tkinter.END, "NASDAQ")
     legend1.place(x=750,y=300)
